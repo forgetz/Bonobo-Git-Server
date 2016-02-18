@@ -1,0 +1,57 @@
+﻿@{
+    ViewBag.Title = "LastedCommit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="pure-g">
+    <div class="pure-u-2-5">
+        <h1>
+            Lasted Commit
+        </h1>
+    </div>
+</div>
+
+@if (Model != null)
+{
+    <div class="pure-g">
+        <table>
+            @*<tfoot>
+                    <tr>
+                        <td colspan="1">1
+                            <a href="/Repository/test_aon/master/Commits?page=2">2</a>
+                            <a href="/Repository/test_aon/master/Commits?page=2">&gt;</a>
+                        </td>
+                    </tr>
+                </tfoot>*@
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="commit pure-g">
+                                <div class="pure-u-3-5">
+                                    <h2><a href="../Repository/@item.ProjectName">@item.ProjectName</a></h2>
+                                    <div class="commitdate">
+                                        @item.When.ToString("dd/MM/yyyy")
+                                    </div>
+                                    <div class="commitdate">
+                                        @item.Message
+                                    </div>
+                                </div>
+                                <div class="pure-u-2-5 metadata">
+                                    <div>
+                                        <h4>@item.CommitterName</h4>
+                                        <p>Commit: <a href="../Repository/@item.ProjectName/master/Commit/@item.id">@item.id.Substring(0, 5)</a></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+}

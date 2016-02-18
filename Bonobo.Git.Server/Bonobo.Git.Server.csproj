@@ -264,6 +264,7 @@
     <Compile Include="Configuration\ActiveDirectorySettings.cs" />
     <Compile Include="Configuration\AuthenticationSettings.cs" />
     <Compile Include="Configuration\FederationSettings.cs" />
+    <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Data\ADBackend.cs" />
     <Compile Include="Data\ADBackendStore.cs" />
     <Compile Include="Data\ADRepositoryRepository.cs" />
@@ -292,6 +293,7 @@
     <Compile Include="Git\GitService\ReplicatingStream.cs" />
     <Compile Include="Helpers\MembershipHelper.cs" />
     <Compile Include="Helpers\RepositoryCommitModelHelpers.cs" />
+    <Compile Include="Models\ActivityCommitModels.cs" />
     <Compile Include="Models\RepositoryCommitTitle.cs" />
     <Compile Include="Owin\NativeMethods.cs" />
     <Compile Include="Owin\WindowsAuthenticationDefaults.cs" />
@@ -638,6 +640,7 @@
     <Content Include="Views\Home\ForgotPassword.cshtml" />
     <Content Include="Views\Home\ResetPassword.cshtml" />
     <None Include="Properties\PublishProfiles\Test.pubxml" />
+    <Content Include="Views\Activity\LastedCommit.cshtml" />
     <None Include="Web.Release-Api.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
