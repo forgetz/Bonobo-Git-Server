@@ -9,6 +9,7 @@ using System.Web.Caching;
 using System.Web.Mvc;
 
 using Bonobo.Git.Server.App_GlobalResources;
+using Bonobo.Git.Server.Configuration;
 using Bonobo.Git.Server.Data;
 using Bonobo.Git.Server.Helpers;
 using Bonobo.Git.Server.Models;
@@ -71,7 +72,7 @@ namespace Bonobo.Git.Server.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = MembershipService.GetUser(model.Username);
+                var user = MembershipService.GetUserModel(model.Username);
                 if (user == null)
                 {
                     TempData["ResetSuccess"] = false;
@@ -79,7 +80,7 @@ namespace Bonobo.Git.Server.Controllers
                 }
                 else
                 {
-                    MembershipService.UpdateUser(model.Username, user.Name, user.Surname, user.Email, model.Password);
+                    MembershipService.UpdateUser(user.Id, null, null, null, null, model.Password);
                     TempData["ResetSuccess"] = true;
                 }
             }
@@ -96,7 +97,7 @@ namespace Bonobo.Git.Server.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = MembershipService.GetUser(model.Username);
+                var user = MembershipService.GetUserModel(model.Username);
                 if (user == null)
                 {
                     ModelState.AddModelError("", Resources.Home_ForgotPassword_UserNameFailure);
@@ -104,7 +105,7 @@ namespace Bonobo.Git.Server.Controllers
                 }
                 else
                 {
-                    string token = MembershipService.GenerateResetToken(model.Username);
+                    string token = MembershipService.GenerateResetToken(user.Username);
                     MvcApplication.Cache.Add(token, model.Username, DateTimeOffset.Now.AddHours(1));
 
                     // Passing Requust.Url.Scheme to Url.Action forces it to generate a full URL
@@ -178,6 +179,19 @@ namespace Bonobo.Git.Server.Controllers
         {
             Session["Culture"] = new CultureInfo(lang);
             return Redirect(returnUrl);
+        }
+
+        public ActionResult Diagnostics()
+        {
+            if (Request.IsLocal)
+            {
+                var verifier = new DiagnosticReporter();
+                return Content(verifier.GetVerificationReport(), "text/plain", Encoding.UTF8);
+            }
+            else
+            {
+                return Content("You can only run the diagnostics locally to the server");
+            }
         }
     }
 }
