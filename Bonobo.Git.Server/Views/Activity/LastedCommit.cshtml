@@ -31,7 +31,7 @@
                         <td>
                             <div class="commit pure-g">
                                 <div class="pure-u-3-5">
-                                    <h2><a href="../Repository/@item.ProjectName">@item.ProjectName</a></h2>
+                                    <h2><a href="@Url.Action("Detail", "Repository", new { id = item.id })">@item.ProjectName</a></h2>
                                     <div class="commitdate">
                                         @item.When.ToString("dd/MM/yyyy")
                                     </div>
@@ -42,7 +42,7 @@
                                 <div class="pure-u-2-5 metadata">
                                     <div>
                                         <h4>@item.CommitterName</h4>
-                                        <p>Commit: <a href="../Repository/@item.ProjectName/master/Commit/@item.id">@item.id.Substring(0, 5)</a></p>
+                                        <p>Commit: <a href="@Url.Action("Commit", "Repository", new { id= item.id, commit = item.idSha })">@item.idSha.Substring(0, 7)</a></p>
                                     </div>
                                 </div>
                             </div>
