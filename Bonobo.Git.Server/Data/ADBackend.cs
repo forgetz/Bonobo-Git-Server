@@ -33,11 +33,19 @@ namespace Bonobo.Git.Server.Data
                     {
                         if (instance == null)
                         {
-                            instance = new ADBackend();
+                            instance = new ADBackend(true);
                         }
                     }
                 }
                 return instance;
+            }
+        }
+
+        public static void ResetSingletonForTesting()
+        {
+            lock (instanceLock)
+            {
+                instance = new ADBackend(false);
             }
         }
 
@@ -66,9 +74,12 @@ namespace Bonobo.Git.Server.Data
         private object updateLock = new object();
         private Timer updateTimer;
 
-        private ADBackend()
+        private ADBackend(bool enableAutoUpdate)
         {
-            updateTimer = new Timer(Update, null, TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(180));
+            if (enableAutoUpdate)
+            {
+                updateTimer = new Timer(Update, null, TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(180));
+            }
         }
 
         private void Update(object state)
@@ -77,7 +88,9 @@ namespace Bonobo.Git.Server.Data
             {
                 try
                 {
-                    Parallel.Invoke(() => UpdateUsers(), () => UpdateTeams(), () => UpdateRoles());
+                    UpdateUsers();
+                    UpdateTeams();
+                    UpdateRoles();
                     UpdateRepositories();
                 }
                 catch(Exception ex)
@@ -153,7 +166,7 @@ namespace Bonobo.Git.Server.Data
                 {
                     foreach (Guid Id in Users.Select(x => x.Id).Where(x => UserPrincipal.FindByIdentity(principalContext, IdentityType.Guid, x.ToString()) == null))
                     {
-                        Users.Remove(Id.ToString());
+                        Users.Remove(Id);
                     }
                     foreach (string username in memberGroup.GetMembers(true).OfType<UserPrincipal>().Select(x => x.UserPrincipalName).Where(x => x != null))
                     {
@@ -178,7 +191,7 @@ namespace Bonobo.Git.Server.Data
         {
             foreach (var team in Teams.Select(x => new { x.Id, Name = x.Name }).Where(x => !ActiveDirectorySettings.TeamNameToGroupNameMapping.Keys.Contains(x.Name, StringComparer.OrdinalIgnoreCase)))
             {
-                Teams.Remove(team.Id.ToString());
+                Teams.Remove(team.Id);
             }
 
             if(MembershipService == null)
@@ -216,7 +229,7 @@ namespace Bonobo.Git.Server.Data
         {
             foreach (var role in Roles.Select(x => new { x.Id, Name = x.Name }).Where(x => !ActiveDirectorySettings.RoleNameToGroupNameMapping.Keys.Contains(x.Name, StringComparer.OrdinalIgnoreCase)))
             {
-                Roles.Remove(role.Id.ToString());
+                Roles.Remove(role.Id);
             }
 
             PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, ActiveDirectorySettings.DefaultDomain);

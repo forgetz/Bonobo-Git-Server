@@ -5,17 +5,18 @@ using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
+using Bonobo.Git.Server.Models;
 
 namespace Bonobo.Git.Server.Security
 {
     public class ADRoleProvider : IRoleProvider
     {
-        public void AddUserToRoles(string username, string[] roleNames)
+        public void AddUserToRoles(Guid userId, string[] roleNames)
         {
             // Use ADUC to assign groups to users instead
         }
 
-        public void AddUsersToRoles(string[] usernames, string[] roleNames)
+        public void AddUsersToRoles(Guid[] userIds, string[] roleNames)
         {
             // Use ADUC to assign groups to users instead
         }
@@ -35,7 +36,7 @@ namespace Bonobo.Git.Server.Security
         {
             if (String.IsNullOrEmpty(usernameToMatch)) throw new ArgumentException("Value cannot be null or empty.", "usernameToMatch");
 
-            return String.IsNullOrEmpty(usernameToMatch) ? ADBackend.Instance.Roles[roleName].Members : ADBackend.Instance.Roles[roleName].Members.Where(x => x.Contains(usernameToMatch)).ToArray();
+            return String.IsNullOrEmpty(usernameToMatch) ? GetRoleByName(roleName).Members : GetRoleByName(roleName).Members.Where(x => x.Contains(usernameToMatch)).ToArray();
         }
 
         public string[] GetAllRoles()
@@ -45,33 +46,39 @@ namespace Bonobo.Git.Server.Security
 
         public string[] GetRolesForUser(Guid userId)
         {
-            var user = ADBackend.Instance.Users.Where(x => x.Id.Equals(userId)).FirstOrDefault();
+            var user = ADBackend.Instance.Users.First(x => x.Id == userId);
             return ADBackend.Instance.Roles.Where(x => x.Members.Contains(user.Username, StringComparer.OrdinalIgnoreCase)).Select(x => x.Name).ToArray();
         }
 
         public string[] GetUsersInRole(string roleName)
         {
-            return ADBackend.Instance.Roles[roleName].Members;
+            return GetRoleByName(roleName).Members;
         }
 
-        public bool IsUserInRole(string username, string roleName)
+        public bool IsUserInRole(Guid userId, string roleName)
         {
-            return ADBackend.Instance.Roles[roleName].Members.Contains(username, StringComparer.OrdinalIgnoreCase);
+            var user = ADBackend.Instance.Users.First(x => x.Id == userId);
+            return GetRoleByName(roleName).Members.Contains(user.Username, StringComparer.OrdinalIgnoreCase);
         }
 
-        public void RemoveUserFromRoles(string username, string[] roleNames)
+        public void RemoveUserFromRoles(Guid userId, string[] roleNames)
         {
             // Use ADUC to remove users from groups
         }
 
-        public void RemoveUsersFromRoles(string[] usernames, string[] roleNames)
+        public void RemoveUsersFromRoles(Guid[] userIds, string[] roleNames)
         {
             // Use ADUC to remove users from groups
         }
 
         public bool RoleExists(string roleName)
         {
-            return ADBackend.Instance.Roles[roleName] != null;
+            return ADBackend.Instance.Roles.Any(role => role.Name == roleName);
+        }
+
+        private static RoleModel GetRoleByName(string roleName)
+        {
+            return ADBackend.Instance.Roles.First(role => role.Name == roleName);
         }
     }
 }

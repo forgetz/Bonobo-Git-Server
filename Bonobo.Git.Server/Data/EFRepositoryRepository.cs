@@ -2,34 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bonobo.Git.Server.Models;
-using System.Data;
 using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
-using Bonobo.Git.Server.Security;
+using Microsoft.Practices.Unity;
 
 namespace Bonobo.Git.Server.Data
 {
-    public class EFRepositoryRepository : IRepositoryRepository
+    public class EFRepositoryRepository : RepositoryRepositoryBase
     {
-        private readonly Func<BonoboGitServerContext> _createDatabaseContext;
+        [Dependency]
+        public Func<BonoboGitServerContext> CreateContext { get; set; }
 
-        public EFRepositoryRepository()
+        public override IList<RepositoryModel> GetAllRepositories()
         {
-            _createDatabaseContext = () => new BonoboGitServerContext();
-        }
-        private EFRepositoryRepository(Func<BonoboGitServerContext> contextCreator)
-        {
-            _createDatabaseContext = contextCreator;
-        }
-        public static EFRepositoryRepository FromCreator(Func<BonoboGitServerContext> contextCreator)
-        {
-            return new EFRepositoryRepository(contextCreator);
-        }
-
-
-        public IList<RepositoryModel> GetAllRepositories()
-        {
-            using (var db = _createDatabaseContext())
+            using (var db = CreateContext())
             {
                 var dbrepos = db.Repositories.Select(repo => new
                 {
@@ -61,43 +47,29 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
-        public IList<RepositoryModel> GetPermittedRepositories(Guid? UserId, Guid[] teamsId)
-        {
-            return GetAllRepositories().Where( i => 
-                i.Users.Any(x => x.Id == UserId) ||
-                i.Administrators.Any(x => x.Id == UserId) ||
-                i.Teams.FirstOrDefault(t => teamsId.Contains(t.Id)) != null ||
-                i.AnonymousAccess).ToList();
-        }
-
-        public IList<RepositoryModel> GetAdministratedRepositories(Guid UserId)
-        {
-            return GetAllRepositories().Where(i => i.Administrators.Any(x => x.Id == UserId)).ToList();
-        }
-
-        public RepositoryModel GetRepository(string name)
+        public override RepositoryModel GetRepository(string name)
         {
             if (name == null) throw new ArgumentNullException("name");
 
-            using (var db = _createDatabaseContext())
+            using (var db = CreateContext())
             {
                 return ConvertToModel(db.Repositories.FirstOrDefault(i => i.Name == name));
             }
         }
 
-        public RepositoryModel GetRepository(Guid id)
+        public override RepositoryModel GetRepository(Guid id)
         {
-            using (var db = _createDatabaseContext())
+            using (var db = CreateContext())
             {
                 return ConvertToModel(db.Repositories.First(i => i.Id.Equals(id)));
             }
         }
 
-        public void Delete(Guid RepositoryId)
+        public override void Delete(Guid id)
         {
-            using (var db = _createDatabaseContext())
+            using (var db = CreateContext())
             {
-                var repo = db.Repositories.FirstOrDefault(i => i.Id == RepositoryId);
+                var repo = db.Repositories.FirstOrDefault(i => i.Id == id);
                 if (repo != null)
                 {
                     repo.Administrators.Clear();
@@ -109,12 +81,12 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
-        public bool Create(RepositoryModel model)
+        public override bool Create(RepositoryModel model)
         {
             if (model == null) throw new ArgumentException("model");
             if (model.Name == null) throw new ArgumentException("name");
 
-            using (var database = _createDatabaseContext())
+            using (var database = CreateContext())
             {
                 model.Id = Guid.NewGuid();
                 var repository = new Repository
@@ -145,12 +117,12 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
-        public void Update(RepositoryModel model)
+        public override void Update(RepositoryModel model)
         {
             if (model == null) throw new ArgumentException("model");
             if (model.Name == null) throw new ArgumentException("name");
 
-            using (var db = _createDatabaseContext())
+            using (var db = CreateContext())
             {
                 var repo = db.Repositories.FirstOrDefault(i => i.Id == model.Id);
                 if (repo != null)

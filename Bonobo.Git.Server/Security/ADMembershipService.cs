@@ -75,7 +75,12 @@ namespace Bonobo.Git.Server.Security
             return result;
         }
 
-        public bool CreateUser(string username, string password, string givenName, string surname, string email, Guid? guid)
+        public bool CreateUser(string username, string password, string givenName, string surname, string email, Guid id)
+        {
+            return false;
+        }
+
+        public bool CreateUser(string username, string password, string givenName, string surname, string email)
         {
             return false;
         }
@@ -104,7 +109,7 @@ namespace Bonobo.Git.Server.Security
 
         public UserModel GetUserModel(Guid id)
         {
-            return ADBackend.Instance.Users[id.ToString()];
+            return ADBackend.Instance.Users[id];
         }
 
         private static bool IsUserPrincipalName(string username)

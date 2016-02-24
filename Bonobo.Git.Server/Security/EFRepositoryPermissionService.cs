@@ -8,16 +8,24 @@ namespace Bonobo.Git.Server.Security
     public class EFRepositoryPermissionService : IRepositoryPermissionService
     {
         [Dependency]
+        public Func<BonoboGitServerContext> CreateContext { get; set; }
+
+        [Dependency]
         public IRepositoryRepository Repository { get; set; }
 
         public bool HasPermission(Guid userId, string repositoryName)
         {
-            return HasPermission(userId, Repository.GetRepository(repositoryName).Id);
+            var repository = Repository.GetRepository(repositoryName);
+            if (repository == null)
+            {
+                return false;
+            }
+            return HasPermission(userId, repository.Id);
         }
 
         public bool HasPermission(Guid userId, Guid repositoryId)
         {
-            using (var database = new BonoboGitServerContext())
+            using (var database = CreateContext())
             {
                 var user = database.Users.FirstOrDefault(i => i.Id == userId);
                 var repository = database.Repositories.FirstOrDefault(i => i.Id == repositoryId);
@@ -37,7 +45,7 @@ namespace Bonobo.Git.Server.Security
 
         public bool AllowsAnonymous(string repositoryName)
         {
-            using (var database = new BonoboGitServerContext())
+            using (var database = CreateContext())
             {
                 var isAllowsAnonymous = database.Repositories.Any(repo => repo.Name == repositoryName && repo.Anonymous);
                 return isAllowsAnonymous;
@@ -46,7 +54,7 @@ namespace Bonobo.Git.Server.Security
 
         public bool AllowsAnonymous(Guid repositoryId)
         {
-            using (var database = new BonoboGitServerContext())
+            using (var database = CreateContext())
             {
                 var isAllowsAnonymous = database.Repositories.Any(repo => repo.Id == repositoryId && repo.Anonymous);
                 return isAllowsAnonymous;
@@ -55,7 +63,7 @@ namespace Bonobo.Git.Server.Security
 
         public bool IsRepositoryAdministrator(Guid userId, Guid repositoryId)
         {
-            using (var database = new BonoboGitServerContext())
+            using (var database = CreateContext())
             {
                 var isRepoAdmin =
                     database.Users.Where(us => us.Id == userId)

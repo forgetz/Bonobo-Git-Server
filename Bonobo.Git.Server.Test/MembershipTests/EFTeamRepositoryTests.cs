@@ -12,46 +12,39 @@ namespace Bonobo.Git.Server.Test.MembershipTests
     [TestClass]
     public class EFSqliteTeamRepositoryTests : EFTeamRepositoryTests
     {
-        SqliteTestConnection _connection;
-
         [TestInitialize]
         public void Initialize()
         {
             _connection = new SqliteTestConnection();
-            _repo = EFTeamRepository.FromCreator(() => _connection.GetContext());
-            new AutomaticUpdater().RunWithContext(_connection.GetContext());
+            InitialiseTestObjects();
         }
-
-        protected override BonoboGitServerContext MakeContext()
+        [TestCleanup]
+        public void Cleanup()
         {
-            return _connection.GetContext();
+            _connection.Dispose();
         }
     }
 
     [TestClass]
     public class EFSQlServerTeamRepositoryTests : EFTeamRepositoryTests
     {
-        SqlServerTestConnection _connection;
-
         [TestInitialize]
         public void Initialize()
         {
             _connection = new SqlServerTestConnection();
-            _repo = EFTeamRepository.FromCreator(() => _connection.GetContext());
-            new AutomaticUpdater().RunWithContext(_connection.GetContext());
+            InitialiseTestObjects();
         }
-
-        protected override BonoboGitServerContext MakeContext()
+        [TestCleanup]
+        public void Cleanup()
         {
-            return _connection.GetContext();
+            _connection.Dispose();
         }
     }
 
     public abstract class EFTeamRepositoryTests
     {
-        protected EFTeamRepository _repo;
-
-        protected abstract BonoboGitServerContext MakeContext();
+        protected IDatabaseTestConnection _connection;
+        private EFTeamRepository _repo;
 
         [TestMethod]
         public void TestRepositoryIsCreated()
@@ -186,13 +179,22 @@ namespace Bonobo.Git.Server.Test.MembershipTests
             Assert.AreEqual("Team1", _repo.GetAllTeams().Single().Name);
         }
 
-
         private UserModel AddUserFred()
         {
-            EFMembershipService memberService = new EFMembershipService(MakeContext);
-            memberService.CreateUser("fred", "letmein", "Fred", "FredBlogs", "fred@aol", null);
+            EFMembershipService memberService = new EFMembershipService { CreateContext = GetContext };
+            memberService.CreateUser("fred", "letmein", "Fred", "FredBlogs", "fred@aol");
             return memberService.GetUserModel("fred");
         }
 
+        private BonoboGitServerContext GetContext()
+        {
+            return _connection.GetContext();
+        }
+
+        protected void InitialiseTestObjects()
+        {
+            _repo = new EFTeamRepository {CreateContext = () => _connection.GetContext()};
+            new AutomaticUpdater().RunWithContext(_connection.GetContext());
+        }
     }
 }
