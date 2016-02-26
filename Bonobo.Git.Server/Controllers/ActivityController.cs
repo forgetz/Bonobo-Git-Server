@@ -23,7 +23,7 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorize]
         public ActionResult LastedCommit(int page = 1)
         {
-            int pageSize = 10;
+            //int pageSize = 10;
             var repositoryDirectory = UserConfiguration.Current.Repositories;
             var di = new DirectoryInfo(repositoryDirectory);
             var allRepo = di.GetDirectories("*.*", SearchOption.TopDirectoryOnly);
