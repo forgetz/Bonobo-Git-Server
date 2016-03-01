@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 using System.IO;
 using Bonobo.Git.Server.Data;
 
-namespace Bonobo.Git.Server.Test.MembershipTests
+namespace Bonobo.Git.Server.Test.MembershipTests.EFTests
 {
     class SqlServerTestConnection : IDatabaseTestConnection
     {
@@ -38,7 +38,7 @@ namespace Bonobo.Git.Server.Test.MembershipTests
                 }
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
