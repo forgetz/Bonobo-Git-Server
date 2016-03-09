@@ -9,6 +9,7 @@ using Bonobo.Git.Server.Models;
 using LibGit2Sharp;
 using Microsoft.Practices.Unity;
 using Bonobo.Git.Server.Data;
+using Bonobo.Git.Server.Security;
 
 namespace Bonobo.Git.Server.Controllers
 {
@@ -19,6 +20,9 @@ namespace Bonobo.Git.Server.Controllers
 
         [Dependency]
         public IRepositoryRepository RepositoryRepository { get; set; }
+
+        [Dependency]
+        public IRepositoryPermissionService RepositoryPermissionService { get; set; }
 
         [WebAuthorize]
         public ActionResult LastedCommit(int page = 1)
@@ -83,17 +87,7 @@ namespace Bonobo.Git.Server.Controllers
 
         private IEnumerable<RepositoryDetailModel> GetIndexModel()
         {
-            IEnumerable<RepositoryModel> repositoryModels;
-            if (User.IsInRole(Definitions.Roles.Administrator))
-            {
-                repositoryModels = RepositoryRepository.GetAllRepositories();
-            }
-            else
-            {
-                var userTeams = TeamRepository.GetTeams(User.Id()).Select(i => i.Id).ToArray();
-                repositoryModels = RepositoryRepository.GetPermittedRepositories(User.Id(), userTeams);
-            }
-            return repositoryModels.Select(ConvertRepositoryModel).ToList();
+            return RepositoryPermissionService.GetAllPermittedRepositories(User.Id(), RepositoryAccessLevel.Pull).Select(ConvertRepositoryModel).ToList();
         }
 
         private RepositoryDetailModel ConvertRepositoryModel(RepositoryModel model)
