@@ -14,6 +14,7 @@ using Bonobo.Git.Server.Attributes;
 using Bonobo.Git.Server.Data;
 
 using LibGit2Sharp;
+using System.Web.Mvc;
 
 namespace Bonobo.Git.Server.Models
 {
@@ -24,12 +25,18 @@ namespace Bonobo.Git.Server.Models
         public string Group { get; set; }
         public string Description { get; set; }
         public bool AnonymousAccess { get; set; }
+        public RepositoryPushMode AllowAnonymousPush { get; set; }
         public UserModel[] Users { get; set; }
         public UserModel[] Administrators { get; set; }
         public TeamModel[] Teams { get; set; }
         public bool AuditPushUser { get; set; }
         public byte[] Logo { get; set; }
         public bool RemoveLogo { get; set; }
+
+        public RepositoryModel()
+        {
+            AllowAnonymousPush = RepositoryPushMode.Global;
+        }
 
         public bool NameIsValid
         {
@@ -49,23 +56,49 @@ namespace Bonobo.Git.Server.Models
             }
         }
 
+        public void EnsureCollectionsAreValid()
+        {
+            if (Administrators == null)
+            {
+                Administrators = new UserModel[0];
+            }
+
+            if (Users == null)
+            {
+                Users = new UserModel[0];
+            }
+
+            if (Teams == null)
+            {
+                Teams = new TeamModel[0];
+            }
+        }
+
         public const string NameValidityRegex = @"([\w\.-])*([\w])$";
     }
 
     public class RepositoryDetailModel
     {
+        public RepositoryDetailModel()
+        {
+            AllowAnonymousPush = RepositoryPushMode.Global;
+        }
+
         public Guid Id { get; set; }
 
+        [UniqueRepoName]
         [RegularExpression(RepositoryModel.NameValidityRegex, ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_FileName_Regex")]
         [FileName(ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_FileName")]
         [StringLength(50, ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_StringLength")]
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_Name")]
         public string Name { get; set; }
 
+        [AllowHtml]
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_Group")]
         [StringLength(255, ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_StringLength")]
         public string Group { get; set; }
 
+        [AllowHtml]
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_Description")]
         [StringLength(255, ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_StringLength")]
         public string Description { get; set; }
@@ -83,7 +116,6 @@ namespace Bonobo.Git.Server.Models
 
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_Administrators")]
         public UserModel[] Administrators { get; set; }
-        [Required(ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Repository_Needs_Administrator")]
         public Guid[] PostedSelectedAdministrators { get; set; }
         public UserModel[] AllAdministrators { get; set; }
 
@@ -92,6 +124,9 @@ namespace Bonobo.Git.Server.Models
 
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_Anonymous")]
         public bool AllowAnonymous { get; set; }
+
+        [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_AllowAnonymousPush")]
+        public RepositoryPushMode AllowAnonymousPush { get; set; }
 
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_Status")]
         public RepositoryDetailStatus Status { get; set; }

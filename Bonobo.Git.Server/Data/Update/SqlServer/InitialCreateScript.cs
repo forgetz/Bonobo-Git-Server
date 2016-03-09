@@ -1,4 +1,6 @@
-﻿namespace Bonobo.Git.Server.Data.Update.SqlServer
+﻿using System;
+
+namespace Bonobo.Git.Server.Data.Update.SqlServer
 {
     public class InitialCreateScript : IUpdateScript
     {
@@ -13,6 +15,7 @@
                             [Name] VarChar(255) Not Null,
                             [Description] VarChar(255) Null,
                             [Anonymous] Bit Not Null,
+                            [AllowAnonymousPush] Integer Default 3 Not Null,
                             Constraint [PK_Repository] Primary Key ([Name])
                         );
                     END
@@ -110,5 +113,8 @@
         {
             get { return null; }
         }
+
+        public void CodeAction(BonoboGitServerContext context) { }
+
     }
 }

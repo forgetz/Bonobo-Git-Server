@@ -24,6 +24,9 @@ using Bonobo.Git.Server.Git.GitService.ReceivePackHook.Hooks;
 using Bonobo.Git.Server.Security;
 using Microsoft.Practices.Unity;
 using System.Runtime.Caching;
+using Bonobo.Git.Server.Attributes;
+using Microsoft.Practices.Unity.Mvc;
+using System.Web.Configuration;
 
 namespace Bonobo.Git.Server
 {
@@ -72,6 +75,16 @@ namespace Bonobo.Git.Server
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             UserConfiguration.Initialize();
             RegisterDependencyResolver();
+            GlobalFilters.Filters.Add((AllViewsFilter)DependencyResolver.Current.GetService<AllViewsFilter>());
+
+            var connectionstring = WebConfigurationManager.ConnectionStrings["BonoboGitServerContext"];
+            if (connectionstring.ProviderName.ToLower() == "system.data.sqlite")
+            {
+                if(!connectionstring.ConnectionString.ToLower().Contains("binaryguid=false")){
+                    Trace.WriteLine("Please ensure that the sqlite connection string contains 'BinaryGUID=false;'.");
+                    throw new ConfigurationErrorsException("Please ensure that the sqlite connection string contains 'BinaryGUID=false;'.");
+                }
+            }
 
             try
             {
@@ -87,7 +100,7 @@ namespace Bonobo.Git.Server
 
         private static void RegisterDependencyResolver()
         {
-            var container = new UnityContainer().AddExtension(new UnityDecoratorContainerExtension());
+            var container = new UnityContainer();
 
             /* 
                 The UnityDecoratorContainerExtension breaks resolving named type registrations, like:
@@ -106,14 +119,14 @@ namespace Bonobo.Git.Server
                     container.RegisterType<IRoleProvider, ADRoleProvider>();
                     container.RegisterType<ITeamRepository, ADTeamRepository>();
                     container.RegisterType<IRepositoryRepository, ADRepositoryRepository>();
-                    container.RegisterType<IRepositoryPermissionService, ADRepositoryPermissionService>();
+                    container.RegisterType<IRepositoryPermissionService, RepositoryPermissionService>();
                     break;
                 case "internal":
                     container.RegisterType<IMembershipService, EFMembershipService>();
                     container.RegisterType<IRoleProvider, EFRoleProvider>();
                     container.RegisterType<ITeamRepository, EFTeamRepository>();
                     container.RegisterType<IRepositoryRepository, EFRepositoryRepository>();
-                    container.RegisterType<IRepositoryPermissionService, EFRepositoryPermissionService>();
+                    container.RegisterType<IRepositoryPermissionService, RepositoryPermissionService>();
                     break;
                 default:
                     throw new ArgumentException("Missing declaration in web.config", "MembershipService");
@@ -269,9 +282,5 @@ namespace Bonobo.Git.Server
                 HttpContext.Current.Server.MapPath(path);
         }
 
-        public static void RegisterGlobalFilterst(GlobalFilterCollection filters)
-        {
-            filters.Add(new HandleErrorAttribute { View = "Home/Error" });
-        }
     }
 }

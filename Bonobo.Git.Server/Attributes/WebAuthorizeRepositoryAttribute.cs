@@ -13,9 +13,6 @@ namespace Bonobo.Git.Server
         [Dependency]
         public IRepositoryPermissionService RepositoryPermissionService { get; set; }
 
-        [Dependency]
-        public IRepositoryRepository RepositoryRepository { get; set; }
-
         public bool RequiresRepositoryAdministrator { get; set; }
 
         public override void OnAuthorization(AuthorizationContext filterContext)
@@ -24,35 +21,38 @@ namespace Bonobo.Git.Server
 
             if (!(filterContext.Result is HttpUnauthorizedResult))
             {
-                Guid incomingRepoId = Guid.Parse(filterContext.Controller.ControllerContext.RouteData.Values["id"].ToString());
-                Guid userId = filterContext.HttpContext.User.Id();
-
-                if (filterContext.HttpContext.User.IsInRole(Definitions.Roles.Administrator))
+                Guid repoId;
+                var urlhelper = new UrlHelper(filterContext.RequestContext);
+                if (Guid.TryParse(filterContext.Controller.ControllerContext.RouteData.Values["id"].ToString(), out repoId))
                 {
-                    return;
-                }
+                    Guid userId = filterContext.HttpContext.User.Id();
 
-                if (RequiresRepositoryAdministrator)
-                {
-                    if (RepositoryPermissionService.IsRepositoryAdministrator(userId, incomingRepoId))
+                    var requiredAccess = RequiresRepositoryAdministrator
+                        ? RepositoryAccessLevel.Administer
+                        : RepositoryAccessLevel.Push;
+
+                    if (RepositoryPermissionService.HasPermission(userId, repoId, requiredAccess))
                     {
                         return;
                     }
+
+                    filterContext.Result = new RedirectResult(urlhelper.Action("Unauthorized", "Home"));
                 }
                 else
                 {
-                    if (RepositoryPermissionService.HasPermission(userId, incomingRepoId))
+                    var rd = filterContext.RequestContext.RouteData;
+                    var action = rd.GetRequiredString("action");
+                    var controller = rd.GetRequiredString("controller");
+                    if (action.Equals("index", StringComparison.OrdinalIgnoreCase) && controller.Equals("repository", StringComparison.OrdinalIgnoreCase))
                     {
-                        return;
+                        filterContext.Result = new RedirectResult(urlhelper.Action("Unauthorized", "Home"));
                     }
-
-                    if (RepositoryPermissionService.AllowsAnonymous(incomingRepoId))
+                    else
                     {
-                        return;
+                        filterContext.Controller.TempData["RepositoryNotFound"] = true;
+                        filterContext.Result = new RedirectResult(urlhelper.Action("Index", "Repository"));
                     }
                 }
-
-                filterContext.Result = new RedirectResult("~/Home/Unauthorized");
             }
         }
     }

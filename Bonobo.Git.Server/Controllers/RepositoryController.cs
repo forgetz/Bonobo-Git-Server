@@ -48,6 +48,9 @@ namespace Bonobo.Git.Server.Controllers
                                             .AsEnumerable();
             }
 
+            foreach(var item in firstList){
+                SetGitUrls(item);
+            }
             var list = firstList
                     .GroupBy(x => x.Group)
                     .OrderBy(x => x.Key, string.IsNullOrEmpty(sortGroup) || sortGroup.Equals("ASC"))
@@ -70,9 +73,20 @@ namespace Bonobo.Git.Server.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (model.PostedSelectedAdministrators.Contains(User.Id()))
+                var currentUserIsInAdminList = model.PostedSelectedAdministrators != null && model.PostedSelectedAdministrators.Contains(User.Id());
+                if (currentUserIsInAdminList || User.IsInRole(Definitions.Roles.Administrator))
                 {
-                    RepositoryRepository.Update(ConvertRepositoryDetailModel(model));
+                    var existingRepo = RepositoryRepository.GetRepository(model.Id);
+                    var repoModel = ConvertRepositoryDetailModel(model);
+                    MoveRepo(existingRepo, repoModel);
+                    try
+                    {
+                        RepositoryRepository.Update(repoModel);
+                    }
+                    catch (System.Data.Entity.Infrastructure.DbUpdateException)
+                    {
+                        MoveRepo(repoModel, existingRepo);
+                    }
                     ViewBag.UpdateSuccess = true;
                 }
                 else
@@ -84,10 +98,27 @@ namespace Bonobo.Git.Server.Controllers
             return View(model);
         }
 
+        private void MoveRepo(RepositoryModel oldRepo, RepositoryModel newRepo)
+        {
+            if (oldRepo.Name != newRepo.Name)
+            {
+                string old_path = Path.Combine(UserConfiguration.Current.Repositories, oldRepo.Name);
+                string new_path = Path.Combine(UserConfiguration.Current.Repositories, newRepo.Name);
+                try
+                {
+                    Directory.Move(old_path, new_path);
+                }
+                catch (IOException exc)
+                {
+                    ModelState.AddModelError("Name", exc.Message);
+                }
+            }
+        }
+
         [WebAuthorize]
         public ActionResult Create()
         {
-            if (!User.IsInRole(Definitions.Roles.Administrator) && !UserConfiguration.Current.AllowUserRepositoryCreation)
+            if (!RepositoryPermissionService.HasCreatePermission(User.Id()))
             {
                 return RedirectToAction("Unauthorized", "Home");
             }
@@ -104,7 +135,7 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorize]
         public ActionResult Create(RepositoryDetailModel model)
         {
-            if (!User.IsInRole(Definitions.Roles.Administrator) && !UserConfiguration.Current.AllowUserRepositoryCreation)
+            if (!RepositoryPermissionService.HasCreatePermission(User.Id()))
             {
                 return RedirectToAction("Unauthorized", "Home");
             }
@@ -176,10 +207,11 @@ namespace Bonobo.Git.Server.Controllers
         public ActionResult Detail(Guid id)
         {
             ViewBag.ID = id;
+
             var model = ConvertRepositoryModel(RepositoryRepository.GetRepository(id));
             if (model != null)
             {
-                model.IsCurrentUserAdministrator = User.IsInRole(Definitions.Roles.Administrator) || RepositoryPermissionService.IsRepositoryAdministrator(User.Id(), model.Id);
+                model.IsCurrentUserAdministrator = RepositoryPermissionService.HasPermission(User.Id(), model.Id, RepositoryAccessLevel.Administer);
                 SetGitUrls(model);
             }
             using (var browser = new RepositoryBrowser(Path.Combine(UserConfiguration.Current.Repositories, model.Name)))
@@ -420,7 +452,7 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorize]
         public ActionResult Clone(Guid id)
         {
-            if (!User.IsInRole(Definitions.Roles.Administrator) && !UserConfiguration.Current.AllowUserRepositoryCreation)
+            if (!RepositoryPermissionService.HasCreatePermission(User.Id()))
             {
                 return RedirectToAction("Unauthorized", "Home");
             }
@@ -437,7 +469,7 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorizeRepository]
         public ActionResult Clone(Guid id, RepositoryDetailModel model)
         {
-            if (!User.IsInRole(Definitions.Roles.Administrator) && !UserConfiguration.Current.AllowUserRepositoryCreation)
+            if (!RepositoryPermissionService.HasCreatePermission(User.Id()))
             {
                 return RedirectToAction("Unauthorized", "Home");
             }
@@ -520,15 +552,15 @@ namespace Bonobo.Git.Server.Controllers
             model.AllAdministrators = MembershipService.GetAllUsers().ToArray();
             model.AllUsers = MembershipService.GetAllUsers().ToArray();
             model.AllTeams = TeamRepository.GetAllTeams().ToArray();
-            if (model.PostedSelectedUsers != null && model.PostedSelectedUsers.Count() > 0)
+            if (model.PostedSelectedUsers != null && model.PostedSelectedUsers.Any())
             {
                 model.Users = model.PostedSelectedUsers.Select(x => MembershipService.GetUserModel(x)).ToArray();
             }
-            if (model.PostedSelectedTeams != null && model.PostedSelectedTeams.Count() > 0)
+            if (model.PostedSelectedTeams != null && model.PostedSelectedTeams.Any())
             {
                 model.Teams = model.PostedSelectedTeams.Select(x => TeamRepository.GetTeam(x)).ToArray();
             }
-            if (model.PostedSelectedAdministrators != null && model.PostedSelectedAdministrators.Count() > 0)
+            if (model.PostedSelectedAdministrators != null && model.PostedSelectedAdministrators.Any())
             {
                 model.Administrators = model.PostedSelectedAdministrators.Select(x => MembershipService.GetUserModel(x)).ToArray();
             }
@@ -561,17 +593,7 @@ namespace Bonobo.Git.Server.Controllers
 
         private IEnumerable<RepositoryDetailModel> GetIndexModel()
         {
-            IEnumerable<RepositoryModel> repositoryModels;
-            if (User.IsInRole(Definitions.Roles.Administrator))
-            {
-                repositoryModels = RepositoryRepository.GetAllRepositories();
-            }
-            else
-            {
-                var userTeams = TeamRepository.GetTeams(User.Id()).Select(i => i.Id).ToArray();
-                repositoryModels = RepositoryRepository.GetPermittedRepositories(User.Id(), userTeams);
-            }
-            return repositoryModels.Select(ConvertRepositoryModel).ToList();
+            return RepositoryPermissionService.GetAllPermittedRepositories(User.Id(), RepositoryAccessLevel.Pull).Select(ConvertRepositoryModel).ToList();
         }
 
         private RepositoryDetailModel ConvertRepositoryModel(RepositoryModel model)
@@ -587,6 +609,7 @@ namespace Bonobo.Git.Server.Controllers
                 Teams = model.Teams,
                 IsCurrentUserAdministrator = model.Administrators.Select(x => x.Id).Contains(User.Id()),
                 AllowAnonymous = model.AnonymousAccess,
+                AllowAnonymousPush = model.AllowAnonymousPush,
                 Status = GetRepositoryStatus(model),
                 AuditPushUser = model.AuditPushUser,
                 Logo = new RepositoryLogoDetailModel(model.Logo),
@@ -620,6 +643,7 @@ namespace Bonobo.Git.Server.Controllers
                 AnonymousAccess = model.AllowAnonymous,
                 AuditPushUser = model.AuditPushUser,
                 Logo = model.Logo != null ? model.Logo.BinaryData : null,
+                AllowAnonymousPush = model.AllowAnonymousPush,
                 RemoveLogo = model.Logo != null && model.Logo.RemoveLogo
             };
         }

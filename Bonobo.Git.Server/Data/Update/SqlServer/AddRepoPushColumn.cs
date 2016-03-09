@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
 namespace Bonobo.Git.Server.Data.Update.SqlServer
 {
-    public class AddGroup : IUpdateScript
+    public class AddRepoPushColumn : IUpdateScript
     {
         public string Command
         {
             get
             {
-                return "ALTER TABLE Repository ADD [Group] NVARCHAR(255) NULL";
+                return "ALTER TABLE Repository ADD [AllowAnonymousPush] Integer NOT NULL CONSTRAINT Def_Var_AAP Default 3";
             }
         }
 
@@ -17,11 +20,10 @@ namespace Bonobo.Git.Server.Data.Update.SqlServer
             get
             {
                 return @"
-            IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Repository' AND  COLUMN_NAME = 'Group')
+            IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Repository' AND  COLUMN_NAME = 'AllowAnonymousPush')
                 SELECT 0
             ELSE
-                SELECT 1
-";
+                SELECT 1";
             }
         }
 

@@ -4,6 +4,24 @@ description: Tracks changes and bug fixes between different versions of Bonobo G
 tags: [Changelog, Changes, Bug Fixes, Features]
 ---
 
+## Version 6.0.0
+
+**TBD March 2016**
+
+### Features
+
+* A new global option allows a repository to be created by pushing at a non-existent repo name
+* Repositories do not need to have an explicit repository administator
+* Allow push for anonymous user can now be set on a per repo basis
+
+### Bugfixes
+
+### Code improvements
+
+* Addition of automated test framework for testing web application
+* Rework of repository permissions Code
+* Abort startup if `BinaryGUID=False` is not set in Sqlite connections. 
+
 ## Version 5.1.1
 
 **12 January 2016**

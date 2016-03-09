@@ -4,16 +4,17 @@ using System.Linq;
 using Bonobo.Git.Server.Models;
 using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
+using System.Diagnostics;
 using Microsoft.Practices.Unity;
 
 namespace Bonobo.Git.Server.Data
 {
-    public class EFRepositoryRepository : RepositoryRepositoryBase
+    public class EFRepositoryRepository : IRepositoryRepository
     {
         [Dependency]
         public Func<BonoboGitServerContext> CreateContext { get; set; }
 
-        public override IList<RepositoryModel> GetAllRepositories()
+        public IList<RepositoryModel> GetAllRepositories()
         {
             using (var db = CreateContext())
             {
@@ -28,6 +29,7 @@ namespace Bonobo.Git.Server.Data
                     Teams = repo.Teams,
                     Administrators = repo.Administrators,
                     AuditPushUser = repo.AuditPushUser,
+                    AllowAnonPush = repo.AllowAnonymousPush,
                     Logo = repo.Logo
                 }).ToList();
 
@@ -42,22 +44,32 @@ namespace Bonobo.Git.Server.Data
                     Teams = repo.Teams.Select(TeamToTeamModel).ToArray(),
                     Administrators = repo.Administrators.Select(user => user.ToModel()).ToArray(),
                     AuditPushUser = repo.AuditPushUser,
+                    AllowAnonymousPush = repo.AllowAnonPush,
                     Logo = repo.Logo
                 }).ToList();
             }
         }
 
-        public override RepositoryModel GetRepository(string name)
+        public RepositoryModel GetRepository(string name, StringComparison compType)
         {
             if (name == null) throw new ArgumentNullException("name");
 
-            using (var db = CreateContext())
+            /* The straight-forward solution of using FindFirstOrDefault with
+             * string.Equal does not work. Even name.Equals with OrdinalIgnoreCase does not
+             * as it seems to get translated into some specific SQL syntax and EF does not
+             * provide case insensitive matching :( */
+            var repos = GetAllRepositories();
+            foreach (var repo in repos)
             {
-                return ConvertToModel(db.Repositories.FirstOrDefault(i => i.Name == name));
+                if (repo.Name.Equals(name, compType))
+                {
+                    return repo;
+                }
             }
+            return null;
         }
 
-        public override RepositoryModel GetRepository(Guid id)
+        public RepositoryModel GetRepository(Guid id)
         {
             using (var db = CreateContext())
             {
@@ -65,7 +77,7 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
-        public override void Delete(Guid id)
+        public void Delete(Guid id)
         {
             using (var db = CreateContext())
             {
@@ -81,13 +93,14 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
-        public override bool Create(RepositoryModel model)
+        public bool Create(RepositoryModel model)
         {
             if (model == null) throw new ArgumentException("model");
             if (model.Name == null) throw new ArgumentException("name");
 
             using (var database = CreateContext())
             {
+                model.EnsureCollectionsAreValid();
                 model.Id = Guid.NewGuid();
                 var repository = new Repository
                 {
@@ -97,6 +110,7 @@ namespace Bonobo.Git.Server.Data
                     Group = model.Group,
                     Description = model.Description,
                     Anonymous = model.AnonymousAccess,
+                    AllowAnonymousPush = model.AllowAnonymousPush,
                     AuditPushUser = model.AuditPushUser,
                 };
                 database.Repositories.Add(repository);
@@ -105,8 +119,9 @@ namespace Bonobo.Git.Server.Data
                 {
                     database.SaveChanges();
                 }
-                catch (DbUpdateException)
+                catch (DbUpdateException ex)
                 {
+                    Trace.TraceWarning("Failed to create repo {0} - {1}", model.Name, ex);
                     return false;
                 }
                 catch (UpdateException)
@@ -117,7 +132,7 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
-        public override void Update(RepositoryModel model)
+        public void Update(RepositoryModel model)
         {
             if (model == null) throw new ArgumentException("model");
             if (model.Name == null) throw new ArgumentException("name");
@@ -127,11 +142,14 @@ namespace Bonobo.Git.Server.Data
                 var repo = db.Repositories.FirstOrDefault(i => i.Id == model.Id);
                 if (repo != null)
                 {
+                    model.EnsureCollectionsAreValid();
+
                     repo.Name = model.Name;
                     repo.Group = model.Group;
                     repo.Description = model.Description;
                     repo.Anonymous = model.AnonymousAccess;
                     repo.AuditPushUser = model.AuditPushUser;
+                    repo.AllowAnonymousPush = model.AllowAnonymousPush;
 
                     if (model.Logo != null)
                         repo.Logo = model.Logo;
@@ -179,6 +197,7 @@ namespace Bonobo.Git.Server.Data
                 Teams = item.Teams.Select(TeamToTeamModel).ToArray(),
                 Administrators = item.Administrators.Select(user => user.ToModel()).ToArray(),
                 AuditPushUser = item.AuditPushUser,
+                AllowAnonymousPush = item.AllowAnonymousPush,
                 Logo = item.Logo
             };
         }
@@ -213,5 +232,9 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
+        public IList<RepositoryModel> GetTeamRepositories(Guid[] teamsId)
+        {
+            return GetAllRepositories().Where(repo => repo.Teams.Any(team => teamsId.Contains(team.Id))).ToList();
+        }
     }
 }

@@ -8,15 +8,18 @@ using System.Data.SQLite;
 
 namespace Bonobo.Git.Server.Data.Update.Sqlite
 {
-    public class AddGuidColumn
+    public class AddGuidColumn : IUpdateScript
     {
-        readonly IAuthenticationProvider AuthProvider;
-        readonly Database _db;
+        private readonly IAuthenticationProvider AuthProvider;
+        private Database _db;
 
-        public AddGuidColumn(BonoboGitServerContext context)
+        public AddGuidColumn()
         {
             AuthProvider = DependencyResolver.Current.GetService<IAuthenticationProvider>();
+        }
 
+        public void CodeAction(BonoboGitServerContext context)
+        {
             _db = context.Database;
 
             if (UpgradeHasAlreadyBeenRun())
@@ -100,7 +103,7 @@ namespace Bonobo.Git.Server.Data.Update.Sqlite
                                            UNIQUE,
                     Password VARCHAR (255) NOT NULL,
                     PasswordSalt VARCHAR (255) NOT NULL,
-                    Email    VARCHAR (255) NOT NULL
+                    Email    VARCHAR (255) NOT NULL,
                 );
 
                 CREATE TABLE Team (
@@ -121,7 +124,8 @@ namespace Bonobo.Git.Server.Data.Update.Sqlite
                     AuditPushUser BIT           NOT NULL
                                                 DEFAULT ('0'),
                     [Group]       VARCHAR (255) DEFAULT (NULL),
-                    Logo          BLOB          DEFAULT (NULL) 
+                    Logo          BLOB          DEFAULT (NULL),
+                    UNIQUE ([Name] COLLATE NOCASE)
                 );
 
                 CREATE TABLE [Role] (
@@ -415,5 +419,8 @@ namespace Bonobo.Git.Server.Data.Update.Sqlite
 
             ");
         }
+
+        public string Command { get { return null; } }
+        public string Precondition { get { return null; } }
     }
 }

@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
 namespace Bonobo.Git.Server.Data.Update.Sqlite
 {
-    public class AddGroup : IUpdateScript
+    public class AddRepoPushColumn : IUpdateScript
     {
         public string Command
         {
             get
             {
-                return "ALTER TABLE Repository ADD COLUMN [Group] VARCHAR(255) DEFAULT(NULL)";
+                return "ALTER TABLE Repository ADD COLUMN [AllowAnonymousPush] INTEGER DEFAULT(3)";
             }
         }
 
@@ -16,7 +19,7 @@ namespace Bonobo.Git.Server.Data.Update.Sqlite
         {
             get
             {
-                return "SELECT Count([Group]) = -1 FROM Repository";
+                return "SELECT Count([AllowAnonymousPush]) = -1 FROM Repository";
             }
         }
 

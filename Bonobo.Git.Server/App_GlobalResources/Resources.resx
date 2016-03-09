@@ -682,6 +682,12 @@
   <data name="Settings_Global_AllowUserRepositoryCreation_Hint" xml:space="preserve">
     <value>If checkbox is unchecked, only administrators can create repositories.</value>
   </data>
+  <data name="Settings_Global_AllowPushToCreate" xml:space="preserve">
+    <value>Allow push to create repositories</value>
+  </data>
+  <data name="Settings_Global_AllowPushToCreate_Hint" xml:space="preserve">
+    <value>If checkbox is checked, Administrators can push a new repository </value>
+  </data>
   <data name="Delete_Back" xml:space="preserve">
     <value>Back</value>
   </data>
@@ -876,5 +882,44 @@
   </data>
   <data name="Repository_Needs_Administrator" xml:space="preserve">
     <value>Repository requires at least one administrator.</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Repository_Git_Url_Copy" xml:space="preserve">
+    <value>Copy repository URL</value>
+  </data>
+  <data name="Repository_No_Group" xml:space="preserve">
+    <value>No Group</value>
+  </data>
+  <data name="Repository_Personal_Git_Url_Copy" xml:space="preserve">
+    <value>Copy personal repository URL</value>
+  </data>
+  <data name="Repository_Rescan_Directory" xml:space="preserve">
+    <value>Rescan directory</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Repository_Go_To_Dropdown" xml:space="preserve">
+    <value>Go to repository</value>
+  </data>
+  <data name="Repository_Duplicate_Name" xml:space="preserve">
+    <value>A repository with this name already exists!</value>
+  </data>
+  <data name="Repository_Detail_AllowAnonymousPush" xml:space="preserve">
+    <value>Anonymous push</value>
+  </data>
+  <data name="Repository_AllowAnonymousPushHint" xml:space="preserve">
+    <value>Allows anonymous users to push to this repository if anonymous acces is granted. If "Global" is selected the option set under your global settings is used.</value>
+  </data>
+  <data name="Global" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
   </data>
 </root>
