@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using SpecsFor;
 using SpecsFor.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,12 +10,13 @@ using Bonobo.Git.Server.Models;
 
 namespace Bonobo.Git.Server.IntegrationTests
 {
-#if !NCRUNCH
     [TestClass]
     public class AssemblyStartup
     {
         private static SpecsForIntegrationHost _host;
+        public static string WebApplicationDirectory;
 
+#if !NCRUNCH
         [AssemblyInitialize()]
         static public void AssemblyInit(TestContext tc)
         {
@@ -24,10 +26,10 @@ namespace Bonobo.Git.Server.IntegrationTests
             config.UseIISExpress()
                 //To do that, it needs to know the name of the project to test...
                 .With(Project.Named("Bonobo.Git.Server"))
-                .UsePort(20000);
+                .UsePort(20000)
                 //And optionally, it can apply Web.config transformations if you want 
                 //it to.
-                //.ApplyWebConfigTransformForConfig("Test");
+                .ApplyWebConfigTransformForConfig("Test");
 
             //In order to leverage the strongly-typed helpers in SpecsFor.Mvc,
             //you need to tell it about your routes.  Here we are just calling
@@ -48,6 +50,10 @@ namespace Bonobo.Git.Server.IntegrationTests
             //tests against the contents of sent messages.
             //config.InterceptEmailMessagesOnPort(13565);
 
+
+            // If we set a WithPublishDirectory above, then this would change
+            WebApplicationDirectory = Path.Combine(Directory.GetCurrentDirectory(), "SpecsForMvc.TestSite");
+
             //The host takes our configuration and performs all the magic.  We
             //need to keep a reference to it so we can shut it down after all
             //the specifications have executed.
@@ -64,6 +70,6 @@ namespace Bonobo.Git.Server.IntegrationTests
         {
             _host.Shutdown();
         }
-    }
 #endif // !NCRUNCH
+    }
 }
