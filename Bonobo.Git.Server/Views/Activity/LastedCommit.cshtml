@@ -33,7 +33,7 @@
                                 <div class="pure-u-3-5">
                                     <h2><a href="@Url.Action("Detail", "Repository", new { id = item.id })">@item.ProjectName</a></h2>
                                     <div class="commitdate">
-                                        @item.When.ToString("dd/MM/yyyy")
+                                        @item.When.ToString("dd/MM/yyyy HH:mm:ss")
                                     </div>
                                     <div class="commitdate">
                                         @item.Message
