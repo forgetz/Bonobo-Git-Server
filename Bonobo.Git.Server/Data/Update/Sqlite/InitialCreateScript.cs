@@ -9,14 +9,18 @@ namespace Bonobo.Git.Server.Data.Update.Sqlite
         {
             get 
             {
-                return @"
+                // If you modify this scheme make sure to introduce an unit test for the new scheme.
+                return string.Format(@"
 
                     CREATE TABLE IF NOT EXISTS [Repository] (
                         [Id] Char(36) PRIMARY KEY NOT NULL,
                         [Name] VarChar(255) Not Null UNIQUE,
                         [Description] VarChar(255) Null,
                         [Anonymous] Bit Not Null,
-                        [AllowAnonymousPush] Integer NULL Default 3,
+                        [AllowAnonymousPush] Integer NULL Default {0},
+                        [LinksRegex] VarChar(255) Not Null,
+                        [LinksUrl] VarChar(255) Not Null,
+                        [LinksUseGlobal] Bit default 1 Not Null,
                         UNIQUE ([Name] COLLATE NOCASE)
                     );
 
@@ -82,7 +86,7 @@ namespace Bonobo.Git.Server.Data.Update.Sqlite
                         Foreign Key ([Team_Id]) References [Team]([Id])
                     );
 
-                    ";
+                    ", (int)RepositoryPushMode.Global);
             }
         }
 

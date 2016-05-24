@@ -25,6 +25,10 @@ backup of your App_Data folder before you update.
 * New diagnostic page at /home/diagnostics to help with support
 * Claims names are now more consistent with typical ADFS usage #488
 * Added following environment variables: `AUTH_USER_TEAMS`, `AUTH_USER_ROLES`, and `AUTH_USER_DISPLAYNAME`. See the FAQ for more information. #495
+* The linkify option for commit messages can now be set on a per repo basis
+* Verifies that username, repository and team names are unique as you type them
+* Verifies as you type regex entered for linkification
+* Added icons to repository listing indicating anonymous push/pull status
 
 ### Bugfixes
 
@@ -33,6 +37,7 @@ backup of your App_Data folder before you update.
 * Correct error reported to Git clients for access to non-existent repo #447
 * Bonobo can start enough to allow access to settings if git directory is mis-configured #451
 * Bonobo doesn't run on systems with particular machine.config RoleManager settings #486
+* The repository logo was not visible in all views
 
 ### Code improvements
 
@@ -45,6 +50,18 @@ backup of your App_Data folder before you update.
 * Resharper settings provided so that Resharper suggested style matches project #465
 * UserModel and User entity class name properties made more consistent #470
 * Far fewer catch-all claueses silently swallowing exceptions
+
+
+## Version 5.2
+
+**17 March 2016**
+
+### Security
+
+This is an important security release adding a CSRF protection to POST actions in the app. Also, it fixes a token validation on password reset function and adds the CSRF protection there as well.
+
+* add form antiforgery protection - Will Dean
+
 
 ## Version 5.1.1
 

@@ -50,7 +50,7 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
-        public RepositoryModel GetRepository(string name, StringComparison compType)
+        public RepositoryModel GetRepository(string name)
         {
             if (name == null) throw new ArgumentNullException("name");
 
@@ -61,7 +61,7 @@ namespace Bonobo.Git.Server.Data
             var repos = GetAllRepositories();
             foreach (var repo in repos)
             {
-                if (repo.Name.Equals(name, compType))
+                if (repo.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                 {
                     return repo;
                 }
@@ -93,6 +93,12 @@ namespace Bonobo.Git.Server.Data
             }
         }
 
+        public bool NameIsUnique(string newName, Guid ignoreRepoId)
+        {
+            var repo = GetRepository(newName);
+            return repo == null || repo.Id == ignoreRepoId;
+        }
+
         public bool Create(RepositoryModel model)
         {
             if (model == null) throw new ArgumentException("model");
@@ -112,6 +118,9 @@ namespace Bonobo.Git.Server.Data
                     Anonymous = model.AnonymousAccess,
                     AllowAnonymousPush = model.AllowAnonymousPush,
                     AuditPushUser = model.AuditPushUser,
+                    LinksUseGlobal = model.LinksUseGlobal,
+                    LinksUrl = model.LinksUrl,
+                    LinksRegex = model.LinksRegex 
                 };
                 database.Repositories.Add(repository);
                 AddMembers(model.Users.Select(x => x.Id), model.Administrators.Select(x => x.Id), model.Teams.Select(x => x.Id), repository, database);
@@ -150,6 +159,9 @@ namespace Bonobo.Git.Server.Data
                     repo.Anonymous = model.AnonymousAccess;
                     repo.AuditPushUser = model.AuditPushUser;
                     repo.AllowAnonymousPush = model.AllowAnonymousPush;
+                    repo.LinksRegex = model.LinksRegex;
+                    repo.LinksUrl = model.LinksUrl;
+                    repo.LinksUseGlobal = model.LinksUseGlobal;
 
                     if (model.Logo != null)
                         repo.Logo = model.Logo;
@@ -198,7 +210,11 @@ namespace Bonobo.Git.Server.Data
                 Administrators = item.Administrators.Select(user => user.ToModel()).ToArray(),
                 AuditPushUser = item.AuditPushUser,
                 AllowAnonymousPush = item.AllowAnonymousPush,
-                Logo = item.Logo
+                Logo = item.Logo,
+                LinksRegex = item.LinksRegex,
+                LinksUrl = item.LinksUrl,
+                LinksUseGlobal = item.LinksUseGlobal
+
             };
         }
 

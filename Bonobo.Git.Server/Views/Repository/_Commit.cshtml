@@ -14,20 +14,20 @@
         <div class="commitdate">
             @Model.Date.ToString("dd/MM/yyyy HH:mm:ss")
         </div>
-        @if (UserConfiguration.Current.HasLinks)
+        @if (Model.Links.Count() > 0)
         {
         <span class="links">
 
             @foreach (var link in Model.Links)
             {
-                <a target="_blank" href="@string.Format(UserConfiguration.Current.LinksUrl, link)">@link</a>
+                <a target="_blank" class="linkified" href="@link">@link</a>
             }
         </span>
         }
         <span class="tag">
             @foreach (var stag in Model.Tags)
             {
-                @Html.ActionLink(stag, "Commits", new { encodedName = stag, encodedPath = String.Empty })
+                @Html.ActionLink(stag, "Commits", new { id = ViewBag.ID, encodedName = stag, encodedPath = String.Empty })
             }
         </span>
         @if (!string.IsNullOrEmpty(Model.MessageShort))

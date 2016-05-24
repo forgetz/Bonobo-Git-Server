@@ -1,20 +1,19 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Bonobo.Git.Server.Controllers;
-using Bonobo.Git.Server.Test.Integration.Web;
+﻿using Bonobo.Git.Server.Controllers;
 using Bonobo.Git.Server.Test.IntegrationTests.Helpers;
-using SpecsFor.Mvc;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using System;
+using System.Threading;
 
 namespace Bonobo.Git.Server.Test.IntegrationTests
 {
-    using OpenQA.Selenium.Support.UI;
-    using OpenQA.Selenium;
-    using System.Threading;
+    using ITH = IntegrationTestHelpers;
 
     [TestClass]
     public class SharedLayoutTests : IntegrationTestBase
     {
-        [TestMethod, TestCategory(TestCategories.WebIntegrationTest)]
+        [TestMethod, TestCategory(TestCategories.IntegrationTest)]
         public void DropdownNavigationWorks()
         {
             var reponame = ITH.MakeName();

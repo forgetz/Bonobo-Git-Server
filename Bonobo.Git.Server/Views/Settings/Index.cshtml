@@ -16,6 +16,7 @@
 
 @using (Html.BeginForm("Index", "Settings", FormMethod.Post, new { @class = "pure-form pure-form-aligned" }))
 {
+    @Html.AntiForgeryToken()
     @Html.ValidationSummary(false, Resources.Settings_Index_Failed)
     
     <fieldset>
@@ -61,6 +62,7 @@
         <div class="pure-control-group">
             @Html.LabelFor(m => m.LinksRegex)
             @Html.TextBoxFor(m => m.LinksRegex, new { @class = "medium", autofocus = "" })
+            @Html.ValidationMessageFor(m => m.LinksRegex)
         </div>
         <div class="pure-control-group">
             @Html.LabelFor(m => m.LinksUrl)

@@ -1,20 +1,15 @@
-﻿using System;
+﻿using Bonobo.Git.Server.Controllers;
+using Bonobo.Git.Server.Models;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using SpecsFor.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Threading;
-using SpecsFor.Mvc;
-
-using Bonobo.Git.Server.Models;
-using Bonobo.Git.Server.Controllers;
-using Bonobo.Git.Server.IntegrationTests;
-using Bonobo.Git.Server.Test.MembershipTests.ADTests;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 
 namespace Bonobo.Git.Server.Test.IntegrationTests.Helpers
@@ -22,28 +17,32 @@ namespace Bonobo.Git.Server.Test.IntegrationTests.Helpers
     public class IntegrationTestHelpers
     {
         private readonly MvcWebApp _app;
+        private readonly LoadedConfig _lc;
 
-        public IntegrationTestHelpers(MvcWebApp app)
+        public IntegrationTestHelpers(MvcWebApp app, LoadedConfig cc)
         {
             _app = app;
+            _lc = cc;
         }
 
         public void LoginAsAdmin()
         {
+            var cred = _lc.getCredentials("admin");
             _app.NavigateTo<HomeController>(c => c.LogOn("/Account"));
             _app.FindFormFor<LogOnModel>()
-                .Field(f => f.Username).SetValueTo("admin")
-                .Field(f => f.Password).SetValueTo("admin")
+                .Field(f => f.Username).SetValueTo(cred.Item1)
+                .Field(f => f.Password).SetValueTo(cred.Item2)
                 .Submit();
             _app.UrlMapsTo<AccountController>(c => c.Index());
         }
 
         public void LoginAndResetDatabase()
         {
+            var cred = _lc.getCredentials("admin");
             _app.NavigateTo<HomeController>(c => c.LogOnWithResetOption("/Account"));
             _app.FindFormFor<LogOnModel>()
-                .Field(f => f.Username).SetValueTo("admin")
-                .Field(f => f.Password).SetValueTo("admin")
+                .Field(f => f.Username).SetValueTo(cred.Item1)
+                .Field(f => f.Password).SetValueTo(cred.Item2)
                 .Field(f => f.DatabaseResetCode).SetValueTo("1")
                 .Submit();
             _app.UrlMapsTo<AccountController>(c => c.Index());
@@ -100,6 +99,8 @@ namespace Bonobo.Git.Server.Test.IntegrationTests.Helpers
         {
             _app.NavigateTo<AccountController>(c => c.Delete(userId));
             _app.FindFormFor<UserModel>().Submit();
+            _app.WaitForElementToBeVisible(By.CssSelector("div.summary-success"), TimeSpan.FromSeconds(1));
+            _app.UrlShouldMapTo<AccountController>(c => c.Index());
         }
 
         public IEnumerable<UserModel> CreateUsers(int count = 1, int start = 0, [CallerMemberName] string baseuname = "")
@@ -134,6 +135,14 @@ namespace Bonobo.Git.Server.Test.IntegrationTests.Helpers
             return users;
         }
 
+        public static void DeleteTeam(MvcWebApp app, Guid Id)
+        {
+            app.NavigateTo<TeamController>(c => c.Delete(Id));
+            app.FindFormFor<TeamEditModel>().Submit();
+            app.WaitForElementToBeVisible(By.CssSelector("div.summary-success"), TimeSpan.FromSeconds(1));
+            app.UrlShouldMapTo<TeamController>(c => c.Index());
+        }
+
         public IEnumerable<TeamModel> CreateTeams(int count = 1, int start = 0, [CallerMemberName] string baseTeamname = "")
         {
             baseTeamname = MakeName(baseTeamname);
@@ -159,6 +168,10 @@ namespace Bonobo.Git.Server.Test.IntegrationTests.Helpers
         {
             _app.NavigateTo<RepositoryController>(c => c.Delete(guid));
             _app.FindFormFor<RepositoryDetailModel>().Submit();
+
+            _app.WaitForElementToBeVisible(By.CssSelector("div.summary-success"), TimeSpan.FromSeconds(1));
+
+            _app.UrlShouldMapTo<RepositoryController>(c => c.Index(null, null));
 
             // make sure it no longer is listed
             bool has_repo = false;
@@ -248,7 +261,7 @@ namespace Bonobo.Git.Server.Test.IntegrationTests.Helpers
         }
 
         /* The default is to use the default calling methods name */
-        public string MakeName([CallerMemberName] string name = "", int maxLen = 50)
+        public static string MakeName([CallerMemberName] string name = "", int maxLen = 50)
         {
             // Prefer beginning + end from user as this make it possible to use
             // Curname + extension as uniqueness
@@ -259,5 +272,38 @@ namespace Bonobo.Git.Server.Test.IntegrationTests.Helpers
             }
             return name;
         }
+
+        public void SetGlobalSetting<T>(Expression<Func<GlobalSettingsModel, T>> optionExpression, string value)
+        {
+            _app.NavigateTo<SettingsController>(c => c.Index());
+            var form = _app.FindFormFor<GlobalSettingsModel>();
+            var field = form.Field(optionExpression);
+            field.SetValueTo(value);
+            form.Submit();
+            AssertSuccessMessageIsDisplayed();
+        }
+
+        public void SetGlobalSetting<T>(Expression<Func<GlobalSettingsModel, T>> optionExpression, bool value)
+        {
+            _app.NavigateTo<SettingsController>(c => c.Index());
+            var form = _app.FindFormFor<GlobalSettingsModel>();
+            var field = form.Field(optionExpression);
+            SetCheckbox(field.Field, (bool)value);
+            form.Submit();
+            AssertSuccessMessageIsDisplayed();
+        }
+
+        public static void SetElementAttribute(IWebElement element, string attName, string attValue)
+        {
+            MvcWebApp.Driver.GetDriver()
+                .ExecuteScript("arguments[0].setAttribute(arguments[1], arguments[2]);", 
+                element, attName, attValue);
+        }
+
+        public void AssertSuccessMessageIsDisplayed(int timeoutSeconds = 1)
+        {
+            _app.WaitForElementToBeVisible(By.CssSelector("div.summary-success"), TimeSpan.FromSeconds(timeoutSeconds));
+        }
     }
+
 }

@@ -92,6 +92,12 @@ namespace Bonobo.Git.Server.App_Start
                             new { id = @"\d+" });
 
 
+            routes.MapRoute("Validation", "Validation/{action}", new { controller = "Validation", action = String.Empty });
+
+            routes.MapRoute("RepoCommits",
+                            "Repository/Commits/{id}",
+                            new { controller = "Repository", action = "Commits", id = string.Empty, page = 1 });
+
             routes.MapRoute("Default", 
                             "{controller}/{action}/{id}",
                             new { controller = "Home", action = "Index", id = String.Empty });

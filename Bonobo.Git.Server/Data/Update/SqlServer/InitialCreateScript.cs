@@ -8,14 +8,18 @@ namespace Bonobo.Git.Server.Data.Update.SqlServer
         {
             get
             {
-                return @"
+                // If you modify this scheme make sure to introduce an unit test for the new scheme.
+                return string.Format(@"
                     IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'Repository'))
                     BEGIN
                         CREATE TABLE [dbo].[Repository] (
                             [Name] VarChar(255) Not Null,
                             [Description] VarChar(255) Null,
                             [Anonymous] Bit Not Null,
-                            [AllowAnonymousPush] Integer Default 3 Not Null,
+                            [AllowAnonymousPush] Integer Default {0} Not Null,
+                            [LinksRegex] VarChar(255) Not Null,
+                            [LinksUrl] VarChar(255) Not Null,
+                            [LinksUseGlobal] Bit Default 1 Not Null,
                             Constraint [PK_Repository] Primary Key ([Name])
                         );
                     END
@@ -105,7 +109,7 @@ namespace Bonobo.Git.Server.Data.Update.SqlServer
                         );
                     END
 
-                    ";
+                    ", (int)RepositoryPushMode.Global);
             }
         }
 

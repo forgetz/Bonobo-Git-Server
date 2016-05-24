@@ -32,10 +32,16 @@ namespace Bonobo.Git.Server.Models
         public bool AuditPushUser { get; set; }
         public byte[] Logo { get; set; }
         public bool RemoveLogo { get; set; }
+        public string LinksRegex { get; set; }
+        public string LinksUrl { get; set; }
+        public bool LinksUseGlobal { get; set; }
 
         public RepositoryModel()
         {
             AllowAnonymousPush = RepositoryPushMode.Global;
+            LinksUseGlobal = true;
+            LinksUrl = "";
+            LinksRegex = "";
         }
 
         public bool NameIsValid
@@ -82,10 +88,12 @@ namespace Bonobo.Git.Server.Models
         public RepositoryDetailModel()
         {
             AllowAnonymousPush = RepositoryPushMode.Global;
+            LinksUseGlobal = true;
         }
 
         public Guid Id { get; set; }
 
+        [Remote("UniqueNameRepo", "Validation", AdditionalFields="Id", ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_Duplicate_Name")]
         [UniqueRepoName]
         [RegularExpression(RepositoryModel.NameValidityRegex, ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_FileName_Regex")]
         [FileName(ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "Validation_FileName")]
@@ -125,6 +133,7 @@ namespace Bonobo.Git.Server.Models
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_Anonymous")]
         public bool AllowAnonymous { get; set; }
 
+        [EnumDataType(typeof(RepositoryPushMode), ErrorMessageResourceType=typeof(Resources), ErrorMessageResourceName="Repository_Edit_InvalidAnonymousPushMode")]
         [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_AllowAnonymousPush")]
         public RepositoryPushMode AllowAnonymousPush { get; set; }
 
@@ -137,6 +146,15 @@ namespace Bonobo.Git.Server.Models
         public RepositoryLogoDetailModel Logo { get; set; }
         public string GitUrl { get; set; }
         public string PersonalGitUrl { get; set; }
+
+        [Remote("IsValidRegex", "Validation")]
+        [IsValidRegex]
+        [Display(ResourceType = typeof(Resources), Name = "Settings_Global_LinksRegex")]
+        public string LinksRegex { get; set; }
+        [Display(ResourceType = typeof(Resources), Name = "Settings_Global_LinksUrl")]
+        public string LinksUrl { get; set; }
+        [Display(ResourceType = typeof(Resources), Name = "Repository_Detail_LinksUseGlobal")]
+        public bool LinksUseGlobal { get; set; }
     }
 
     public enum RepositoryDetailStatus
@@ -171,6 +189,7 @@ namespace Bonobo.Git.Server.Models
         public string Text { get; set; }
         public string TextBrush { get; set; }
         public Encoding Encoding { get; set; }
+        public RepositoryLogoDetailModel Logo { get; set; }
     }
 
     public class RepositoryTreeModel
@@ -179,12 +198,14 @@ namespace Bonobo.Git.Server.Models
         public string Branch { get; set; }
         public string Path { get; set; }
         public string Readme { get; set; }
+        public RepositoryLogoDetailModel Logo { get; set; }
         public IEnumerable<RepositoryTreeDetailModel> Files { get; set; }
     }
 
     public class RepositoryCommitsModel
     {
         public string Name { get; set; }
+        public RepositoryLogoDetailModel Logo { get; set; }
         public IEnumerable<RepositoryCommitModel> Commits { get; set; }
     }
 
@@ -215,7 +236,13 @@ namespace Bonobo.Git.Server.Models
 
     public class RepositoryCommitModel
     {
+        public RepositoryCommitModel()
+        {
+            Links = new List<string>();
+        }
+
         public string Name { get; set; }
+        public RepositoryLogoDetailModel Logo { get; set; }
 
         [Display(ResourceType = typeof(Resources), Name = "Repository_Commit_ID")]
         public string ID { get; set; }
@@ -276,6 +303,7 @@ namespace Bonobo.Git.Server.Models
     {
         public string Name { get; set; }
         public string Path { get; set; }
+        public RepositoryLogoDetailModel Logo { get; set; }
         public long FileSize { get; set; }
         public long LineCount { get; set; }
         public IEnumerable<RepositoryBlameHunkModel> Hunks { get; set; }

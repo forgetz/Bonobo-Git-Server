@@ -15,6 +15,7 @@ using Bonobo.Git.Server.Security;
 using Ionic.Zip;
 using Microsoft.Practices.Unity;
 using MimeTypes;
+using System.Security.Principal;
 
 namespace Bonobo.Git.Server.Controllers
 {
@@ -62,12 +63,13 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorizeRepository(RequiresRepositoryAdministrator = true)]
         public ActionResult Edit(Guid id)
         {
-            var model = ConvertRepositoryModel(RepositoryRepository.GetRepository(id));
+            var model = ConvertRepositoryModel(RepositoryRepository.GetRepository(id), User);
             PopulateCheckboxListData(ref model);
             return View(model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [WebAuthorizeRepository(RequiresRepositoryAdministrator = true)]
         public ActionResult Edit(RepositoryDetailModel model)
         {
@@ -133,6 +135,7 @@ namespace Bonobo.Git.Server.Controllers
 
         [HttpPost]
         [WebAuthorize]
+        [ValidateAntiForgeryToken]
         public ActionResult Create(RepositoryDetailModel model)
         {
             if (!RepositoryPermissionService.HasCreatePermission(User.Id()))
@@ -182,10 +185,11 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorizeRepository(RequiresRepositoryAdministrator = true)]
         public ActionResult Delete(Guid id)
         {
-            return View(ConvertRepositoryModel(RepositoryRepository.GetRepository(id)));
+            return View(ConvertRepositoryModel(RepositoryRepository.GetRepository(id), User));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [WebAuthorizeRepository(RequiresRepositoryAdministrator = true)]
         public ActionResult Delete(RepositoryDetailModel model)
         {
@@ -208,7 +212,7 @@ namespace Bonobo.Git.Server.Controllers
         {
             ViewBag.ID = id;
 
-            var model = ConvertRepositoryModel(RepositoryRepository.GetRepository(id));
+            var model = ConvertRepositoryModel(RepositoryRepository.GetRepository(id), User);
             if (model != null)
             {
                 model.IsCurrentUserAdministrator = RepositoryPermissionService.HasPermission(User.Id(), model.Id, RepositoryAccessLevel.Administer);
@@ -275,8 +279,9 @@ namespace Bonobo.Git.Server.Controllers
                     Name = repo.Name,
                     Branch = name,
                     Path = path,
-                    Files = files.OrderByDescending(i => i.IsTree).ThenBy(i => i.Name), 
-                    Readme = readmeTxt
+                    Readme = readmeTxt,
+                    Logo = new RepositoryLogoDetailModel(repo.Logo),
+                    Files = files.OrderByDescending(i => i.IsTree).ThenBy(i => i.Name)
                 };
 
                 if (includeDetails)
@@ -303,6 +308,7 @@ namespace Bonobo.Git.Server.Controllers
                 var path = PathEncoder.Decode(encodedPath);
                 string referenceName;
                 var model = browser.BrowseBlob(name, path, out referenceName);
+                model.Logo = new RepositoryLogoDetailModel(repo.Logo);
                 PopulateBranchesData(browser, referenceName);
                 PopulateAddressBarData(path);
 
@@ -322,6 +328,7 @@ namespace Bonobo.Git.Server.Controllers
                 var path = PathEncoder.Decode(encodedPath);
                 string referenceName;
                 var model = browser.BrowseBlob(name, path, out referenceName);
+                model.Logo = new RepositoryLogoDetailModel(repo.Logo);
 
                 if (!display)
                 {
@@ -352,6 +359,7 @@ namespace Bonobo.Git.Server.Controllers
                 var path = PathEncoder.Decode(encodedPath);
                 string referenceName;
                 var model = browser.GetBlame(name, path, out referenceName);
+                model.Logo = new RepositoryLogoDetailModel(repo.Logo);
                 PopulateBranchesData(browser, referenceName);
                 PopulateAddressBarData(path);
 
@@ -416,7 +424,31 @@ namespace Bonobo.Git.Server.Controllers
         }
 
         [WebAuthorizeRepository]
-        public ActionResult Commits(Guid id, string encodedName, int page = 1)
+        public ActionResult Tags(Guid id, string encodedName, int page = 1)
+        {
+            page = page >= 1 ? page : 1;
+            
+            ViewBag.ID = id;
+            ViewBag.ShowShortMessageOnly = true;
+            var repo = RepositoryRepository.GetRepository(id);
+            using (var browser = new RepositoryBrowser(Path.Combine(UserConfiguration.Current.Repositories, repo.Name)))
+            {
+                var name = PathEncoder.Decode(encodedName);
+                string referenceName;
+                int totalCount;
+                var commits = browser.GetTags(name, page, 10, out referenceName, out totalCount);
+                PopulateBranchesData(browser, referenceName);
+                ViewBag.TotalCount = totalCount;
+                return View(new RepositoryCommitsModel {
+                    Commits = commits,
+                    Name = repo.Name,
+                    Logo = new RepositoryLogoDetailModel(repo.Logo)
+                });
+            }
+        }
+
+        [WebAuthorizeRepository]
+        public ActionResult Commits(Guid id, string encodedName, int page)
         {
             page = page >= 1 ? page : 1;
             
@@ -431,7 +463,48 @@ namespace Bonobo.Git.Server.Controllers
                 var commits = browser.GetCommits(name, page, 10, out referenceName, out totalCount);
                 PopulateBranchesData(browser, referenceName);
                 ViewBag.TotalCount = totalCount;
-                return View(new RepositoryCommitsModel { Commits = commits, Name = repo.Name });
+
+                var linksreg = repo.LinksUseGlobal ? UserConfiguration.Current.LinksRegex : repo.LinksRegex;
+                var linksurl = repo.LinksUseGlobal ? UserConfiguration.Current.LinksUrl : repo.LinksUrl;
+                foreach (var commit in commits)
+                {
+                    var links = new List<string>();
+                    if (!string.IsNullOrEmpty(linksreg))
+                    {
+                        try
+                        {
+                            var matches = Regex.Matches(commit.Message, linksreg);
+                            if (matches.Count > 0)
+                            {
+                                foreach (Match match in matches)
+                                {
+                                    IEnumerable<Group> groups = match.Groups.Cast<Group>();
+                                    var link = "";
+                                    try
+                                    {
+                                        var m = groups.Select(x => x.ToString()).ToArray();
+                                        link = string.Format(linksurl, m);
+                                    }
+                                    catch (FormatException e)
+                                    {
+                                        link = "An error occured while trying to format the link. Exception: " + e.Message;
+                                    }
+                                    links.Add(link);
+                                }
+                            }
+                        }
+                        catch (ArgumentException e)
+                        {
+                            links.Add("An error occured while trying to match the regualar expression. Error: " + e.Message);
+                        }
+                    }
+                    commit.Links = links;
+                }
+                return View(new RepositoryCommitsModel {
+                    Commits = commits,
+                    Name = repo.Name,
+                    Logo = new RepositoryLogoDetailModel(repo.Logo)
+                });
             }
         }
 
@@ -445,6 +518,7 @@ namespace Bonobo.Git.Server.Controllers
             {
                 var model = browser.GetCommitDetail(commit);
                 model.Name = repo.Name;
+                model.Logo = new RepositoryLogoDetailModel(repo.Logo);
                 return View(model);
             }
         }
@@ -457,7 +531,7 @@ namespace Bonobo.Git.Server.Controllers
                 return RedirectToAction("Unauthorized", "Home");
             }
 
-            var model = ConvertRepositoryModel(RepositoryRepository.GetRepository(id));
+            var model = ConvertRepositoryModel(RepositoryRepository.GetRepository(id), User);
             model.Name = "";
             PopulateCheckboxListData(ref model);
             ViewBag.ID = id;
@@ -467,6 +541,7 @@ namespace Bonobo.Git.Server.Controllers
         [HttpPost]
         [WebAuthorize]
         [WebAuthorizeRepository]
+        [ValidateAntiForgeryToken]
         public ActionResult Clone(Guid id, RepositoryDetailModel model)
         {
             if (!RepositoryPermissionService.HasCreatePermission(User.Id()))
@@ -542,13 +617,17 @@ namespace Bonobo.Git.Server.Controllers
                 var name = PathEncoder.Decode(encodedName);
                 string referenceName;
                 var commits = browser.GetHistory(path, name, out referenceName);
-                return View(new RepositoryCommitsModel { Commits = commits, Name = repo.Name });
+                return View(new RepositoryCommitsModel {
+                    Commits = commits,
+                    Name = repo.Name,
+                    Logo = new RepositoryLogoDetailModel(repo.Logo)
+                });
             }
         }
 
         private void PopulateCheckboxListData(ref RepositoryDetailModel model)
         {
-            model = model.Id != Guid.Empty ? ConvertRepositoryModel(RepositoryRepository.GetRepository(model.Id)) : model;
+            model = model.Id != Guid.Empty ? ConvertRepositoryModel(RepositoryRepository.GetRepository(model.Id), User) : model;
             model.AllAdministrators = MembershipService.GetAllUsers().ToArray();
             model.AllUsers = MembershipService.GetAllUsers().ToArray();
             model.AllTeams = TeamRepository.GetAllTeams().ToArray();
@@ -593,10 +672,10 @@ namespace Bonobo.Git.Server.Controllers
 
         private IEnumerable<RepositoryDetailModel> GetIndexModel()
         {
-            return RepositoryPermissionService.GetAllPermittedRepositories(User.Id(), RepositoryAccessLevel.Pull).Select(ConvertRepositoryModel).ToList();
+            return RepositoryPermissionService.GetAllPermittedRepositories(User.Id(), RepositoryAccessLevel.Pull).Select(x => ConvertRepositoryModel(x, User)).ToList();
         }
 
-        private RepositoryDetailModel ConvertRepositoryModel(RepositoryModel model)
+        public static RepositoryDetailModel ConvertRepositoryModel(RepositoryModel model, IPrincipal User)
         {
             return model == null ? null : new RepositoryDetailModel
             {
@@ -613,10 +692,13 @@ namespace Bonobo.Git.Server.Controllers
                 Status = GetRepositoryStatus(model),
                 AuditPushUser = model.AuditPushUser,
                 Logo = new RepositoryLogoDetailModel(model.Logo),
+                LinksUseGlobal = model.LinksUseGlobal,
+                LinksRegex = model.LinksRegex,
+                LinksUrl = model.LinksUrl,
             };
         }
 
-        private RepositoryDetailStatus GetRepositoryStatus(RepositoryModel model)
+        private static RepositoryDetailStatus GetRepositoryStatus(RepositoryModel model)
         {
             string path = Path.Combine(UserConfiguration.Current.Repositories, model.Name);
             if (!Directory.Exists(path))
@@ -644,7 +726,10 @@ namespace Bonobo.Git.Server.Controllers
                 AuditPushUser = model.AuditPushUser,
                 Logo = model.Logo != null ? model.Logo.BinaryData : null,
                 AllowAnonymousPush = model.AllowAnonymousPush,
-                RemoveLogo = model.Logo != null && model.Logo.RemoveLogo
+                RemoveLogo = model.Logo != null && model.Logo.RemoveLogo,
+                LinksUseGlobal = model.LinksUseGlobal,
+                LinksRegex = model.LinksRegex ?? "",
+                LinksUrl = model.LinksUrl ?? ""
             };
         }
 

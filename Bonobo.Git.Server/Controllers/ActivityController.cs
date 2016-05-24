@@ -10,11 +10,15 @@ using LibGit2Sharp;
 using Microsoft.Practices.Unity;
 using Bonobo.Git.Server.Data;
 using Bonobo.Git.Server.Security;
+using System.Globalization;
+using System.Threading;
 
 namespace Bonobo.Git.Server.Controllers
 {
     public class ActivityController : Controller
     {
+
+
         [Dependency]
         public ITeamRepository TeamRepository { get; set; }
 
@@ -27,6 +31,12 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorize]
         public ActionResult LastedCommit(int page = 1)
         {
+            string language = "th";
+            string culture = "TH";
+
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(string.Format("{0}-{1}", language, culture));
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(string.Format("{0}-{1}", language, culture));
+
             //int pageSize = 10;
             var repositoryDirectory = UserConfiguration.Current.Repositories;
             var di = new DirectoryInfo(repositoryDirectory);

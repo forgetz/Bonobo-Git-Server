@@ -1458,6 +1458,15 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use global linkify settings.
+        /// </summary>
+        public static string Repository_Detail_LinksUseGlobal {
+            get {
+                return ResourceManager.GetString("Repository_Detail_LinksUseGlobal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Git URL.
         /// </summary>
         public static string Repository_Detail_Location {
@@ -1557,15 +1566,6 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A repository with this name already exists!.
-        /// </summary>
-        public static string Repository_Duplicate_Name {
-            get {
-                return ResourceManager.GetString("Repository_Duplicate_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Back.
         /// </summary>
         public static string Repository_Edit_Back {
@@ -1589,6 +1589,15 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         public static string Repository_Edit_Fail {
             get {
                 return ResourceManager.GetString("Repository_Edit_Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value provided..
+        /// </summary>
+        public static string Repository_Edit_InvalidAnonymousPushMode {
+            get {
+                return ResourceManager.GetString("Repository_Edit_InvalidAnonymousPushMode", resourceCulture);
             }
         }
         
@@ -1746,6 +1755,15 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tags.
+        /// </summary>
+        public static string Repository_Layout_Tags {
+            get {
+                return ResourceManager.GetString("Repository_Layout_Tags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Repository requires at least one administrator..
         /// </summary>
         public static string Repository_Needs_Administrator {
@@ -1787,6 +1805,15 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         public static string Repository_SwitchBranch {
             get {
                 return ResourceManager.GetString("Repository_SwitchBranch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tags.
+        /// </summary>
+        public static string Repository_Tags_Title {
+            get {
+                return ResourceManager.GetString("Repository_Tags_Title", resourceCulture);
             }
         }
         
@@ -2052,7 +2079,12 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Set Regex to parse commit message for links and url to launch.
+        ///   Looks up a localized string similar to This uses the C# regex library to parse the provided regex. Capturing groups are supported.
+        ///
+        ///The pattern is {0} for the whole regex match.
+        ///{1} onwards is each capturing group.
+        ///
+        ///The regulare C# string formatting rules apply: To get {} in your link you need to write {{}}..
         /// </summary>
         public static string Settings_Global_LinksUrl_Hint {
             get {
@@ -2412,6 +2444,15 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This name has already been taken..
+        /// </summary>
+        public static string Validation_Duplicate_Name {
+            get {
+                return ResourceManager.GetString("Validation_Duplicate_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; is not a valid email address..
         /// </summary>
         public static string Validation_Email {
@@ -2435,6 +2476,15 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         public static string Validation_FileName_Regex {
             get {
                 return ResourceManager.GetString("Validation_FileName_Regex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provided regex has an error. {0}.
+        /// </summary>
+        public static string Validation_Invalid_Regex {
+            get {
+                return ResourceManager.GetString("Validation_Invalid_Regex", resourceCulture);
             }
         }
         
