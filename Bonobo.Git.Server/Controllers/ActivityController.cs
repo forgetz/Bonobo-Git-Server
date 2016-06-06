@@ -12,6 +12,8 @@ using Bonobo.Git.Server.Data;
 using Bonobo.Git.Server.Security;
 using System.Globalization;
 using System.Threading;
+using System.Text.RegularExpressions;
+using Bonobo.Git.Server.Helpers;
 
 namespace Bonobo.Git.Server.Controllers
 {
@@ -31,39 +33,42 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorize]
         public ActionResult LastedCommit(int page = 1)
         {
-            string language = "th";
-            string culture = "TH";
+            page = page >= 1 ? page : 1;
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(string.Format("{0}-{1}", language, culture));
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(string.Format("{0}-{1}", language, culture));
-
-            //int pageSize = 10;
-            var repositoryDirectory = UserConfiguration.Current.Repositories;
-            var di = new DirectoryInfo(repositoryDirectory);
+            var di = new DirectoryInfo(UserConfiguration.Current.Repositories);
             var allRepo = di.GetDirectories("*.*", SearchOption.TopDirectoryOnly);
 
             var list = new List<ActivityCommitModels>();
-
             var repoList = this.GetIndexModel();
 
             foreach (var repoPath in allRepo)
             {
-                using (var repo = new LibGit2Sharp.Repository(repoPath.FullName))
+                //using (var repo = new LibGit2Sharp.Repository(repoPath.FullName))
+                using (var browser = new RepositoryBrowser(Path.Combine(UserConfiguration.Current.Repositories, repoPath.Name)))
                 {
-                    var filter = new CommitFilter
-                    {
-                        SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Reverse,
-                        Since = repo.Refs
-                    };
+                    //var filter = new CommitFilter
+                    //{
+                    //    SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Reverse,
+                    //    Since = repo.Refs
+                    //};
 
-                    var commits = repo.Commits.QueryBy(filter);
+                    //var commits = repo.Commits.QueryBy(filter);
+                    var name = PathEncoder.Decode("");
+                    string referenceName;
+                    int totalCount;
+                    var commits = browser.GetCommits(name, page, 10, out referenceName, out totalCount).ToList();
 
-                    foreach (var com in commits)
-                    {
-                        var id = com.Id.Sha;
-                        var committer = com.Committer.Name;
-                        var committMail = com.Committer.Email;
-                        var committWhen = com.Committer.When;
+                    if (commits.Count < 1)
+                        continue;
+
+                    var com = commits.OrderByDescending(c => c.Date).FirstOrDefault();
+
+                    //foreach (var com in commits)
+                    //{
+                        var id = com.ID;
+                        var committer = com.Author;
+                        var committMail = com.AuthorEmail;
+                        var committWhen = com.Date;
                         var message = com.Message;
 
                         if (repoList.Where(r => r.Name == repoPath.Name).FirstOrDefault() == null)
@@ -75,12 +80,12 @@ namespace Bonobo.Git.Server.Controllers
                         ac.ProjectName = repoPath.Name;
                         ac.CommitterName = committer;
                         ac.Email = committMail;
-                        ac.When = committWhen.UtcDateTime;
+                        ac.When = committWhen;
                         ac.Message = message;
                         ac.idSha = id;
                         ac.id = repoGuid;
                         list.Add(ac);
-                    }
+                    //}
 
                 }
             }
@@ -93,7 +98,6 @@ namespace Bonobo.Git.Server.Controllers
 
             return View(list);
         }
-
 
         private IEnumerable<RepositoryDetailModel> GetIndexModel()
         {

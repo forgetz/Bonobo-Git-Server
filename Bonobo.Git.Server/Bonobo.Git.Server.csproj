@@ -241,6 +241,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnonymousComparer.cs" />
+    <Compile Include="App_GlobalResources\Resources.it-IT.designer.cs" />
+    <Compile Include="App_GlobalResources\Resources.it-IT1.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.it-IT.resx</DependentUpon>
+    </Compile>
     <Compile Include="Attributes\AllViewsAttribute.cs" />
     <Compile Include="Attributes\FileExtensionsCustom.cs" />
     <Compile Include="Attributes\RepositoryNameNormalizerAttribute.cs" />
@@ -250,6 +256,7 @@
     <Compile Include="Configuration\AuthenticationSettings.cs" />
     <Compile Include="Configuration\DiagnosticReporter.cs" />
     <Compile Include="Configuration\FederationSettings.cs" />
+    <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Controllers\ValidationController.cs" />
     <Compile Include="Data\ADBackend.cs" />
     <Compile Include="Data\ADBackendStore.cs" />
@@ -286,6 +293,7 @@
     <Compile Include="Git\GitService\ReplicatingStream.cs" />
     <Compile Include="Helpers\MembershipHelper.cs" />
     <Compile Include="Helpers\RepositoryCommitModelHelpers.cs" />
+    <Compile Include="Models\ActivityCommitModels.cs" />
     <Compile Include="Models\RepositoryCommitTitle.cs" />
     <Compile Include="Owin\NativeMethods.cs" />
     <Compile Include="Owin\WindowsAuthenticationDefaults.cs" />
@@ -520,21 +528,173 @@
     <Content Include="bin\x86\SQLite.Interop.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\components\font-awesome\.bower.json" />
+    <Content Include="Content\components\font-awesome\.gitignore" />
+    <Content Include="Content\components\font-awesome\.npmignore" />
+    <Content Include="Content\components\font-awesome\bower.json" />
+    <Content Include="Content\components\font-awesome\css\font-awesome.css" />
+    <Content Include="Content\components\font-awesome\css\font-awesome.css.map" />
     <Content Include="Content\components\font-awesome\css\font-awesome.min.css" />
     <Content Include="Content\components\font-awesome\fonts\fontawesome-webfont.eot" />
     <Content Include="Content\components\font-awesome\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\components\font-awesome\fonts\fontawesome-webfont.ttf" />
     <Content Include="Content\components\font-awesome\fonts\fontawesome-webfont.woff" />
+    <Content Include="Content\components\font-awesome\fonts\fontawesome-webfont.woff2" />
     <Content Include="Content\components\font-awesome\fonts\FontAwesome.otf" />
+    <Content Include="Content\components\font-awesome\less\animated.less" />
+    <Content Include="Content\components\font-awesome\less\bordered-pulled.less" />
+    <Content Include="Content\components\font-awesome\less\core.less" />
+    <Content Include="Content\components\font-awesome\less\fixed-width.less" />
+    <Content Include="Content\components\font-awesome\less\font-awesome.less" />
+    <Content Include="Content\components\font-awesome\less\icons.less" />
+    <Content Include="Content\components\font-awesome\less\larger.less" />
+    <Content Include="Content\components\font-awesome\less\list.less" />
+    <Content Include="Content\components\font-awesome\less\mixins.less" />
+    <Content Include="Content\components\font-awesome\less\path.less" />
+    <Content Include="Content\components\font-awesome\less\rotated-flipped.less" />
+    <Content Include="Content\components\font-awesome\less\stacked.less" />
+    <Content Include="Content\components\font-awesome\less\variables.less" />
+    <Content Include="Content\components\font-awesome\scss\font-awesome.scss" />
+    <Content Include="Content\components\font-awesome\scss\_animated.scss" />
+    <Content Include="Content\components\font-awesome\scss\_bordered-pulled.scss" />
+    <Content Include="Content\components\font-awesome\scss\_core.scss" />
+    <Content Include="Content\components\font-awesome\scss\_fixed-width.scss" />
+    <Content Include="Content\components\font-awesome\scss\_icons.scss" />
+    <Content Include="Content\components\font-awesome\scss\_larger.scss" />
+    <Content Include="Content\components\font-awesome\scss\_list.scss" />
+    <Content Include="Content\components\font-awesome\scss\_mixins.scss" />
+    <Content Include="Content\components\font-awesome\scss\_path.scss" />
+    <Content Include="Content\components\font-awesome\scss\_rotated-flipped.scss" />
+    <Content Include="Content\components\font-awesome\scss\_stacked.scss" />
+    <Content Include="Content\components\font-awesome\scss\_variables.scss" />
+    <Content Include="Content\components\highlight\CHANGES.md" />
+    <Content Include="Content\components\highlight\highlight.pack.js" />
+    <Content Include="Content\components\highlight\LICENSE" />
+    <Content Include="Content\components\highlight\README.md" />
+    <Content Include="Content\components\highlight\README.ru.md" />
+    <Content Include="Content\components\highlight\styles\agate.css" />
+    <Content Include="Content\components\highlight\styles\androidstudio.css" />
+    <Content Include="Content\components\highlight\styles\arduino-light.css" />
+    <Content Include="Content\components\highlight\styles\arta.css" />
+    <Content Include="Content\components\highlight\styles\ascetic.css" />
+    <Content Include="Content\components\highlight\styles\atelier-cave-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-cave-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-dune-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-dune-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-estuary-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-estuary-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-forest-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-forest-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-heath-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-heath-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-lakeside-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-lakeside-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-plateau-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-plateau-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-savanna-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-savanna-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-seaside-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-seaside-light.css" />
+    <Content Include="Content\components\highlight\styles\atelier-sulphurpool-dark.css" />
+    <Content Include="Content\components\highlight\styles\atelier-sulphurpool-light.css" />
+    <Content Include="Content\components\highlight\styles\brown-paper.css" />
+    <Content Include="Content\components\highlight\styles\brown-papersq.png" />
+    <Content Include="Content\components\highlight\styles\codepen-embed.css" />
+    <Content Include="Content\components\highlight\styles\color-brewer.css" />
+    <Content Include="Content\components\highlight\styles\dark.css" />
+    <Content Include="Content\components\highlight\styles\darkula.css" />
+    <Content Include="Content\components\highlight\styles\default.css" />
+    <Content Include="Content\components\highlight\styles\docco.css" />
+    <Content Include="Content\components\highlight\styles\far.css" />
+    <Content Include="Content\components\highlight\styles\foundation.css" />
+    <Content Include="Content\components\highlight\styles\github-gist.css" />
     <Content Include="Content\components\highlight\styles\github.css" />
+    <Content Include="Content\components\highlight\styles\googlecode.css" />
+    <Content Include="Content\components\highlight\styles\grayscale.css" />
+    <Content Include="Content\components\highlight\styles\hopscotch.css" />
+    <Content Include="Content\components\highlight\styles\hybrid.css" />
+    <Content Include="Content\components\highlight\styles\idea.css" />
+    <Content Include="Content\components\highlight\styles\ir-black.css" />
+    <Content Include="Content\components\highlight\styles\kimbie.dark.css" />
+    <Content Include="Content\components\highlight\styles\kimbie.light.css" />
+    <Content Include="Content\components\highlight\styles\magula.css" />
+    <Content Include="Content\components\highlight\styles\mono-blue.css" />
+    <Content Include="Content\components\highlight\styles\monokai-sublime.css" />
+    <Content Include="Content\components\highlight\styles\monokai.css" />
+    <Content Include="Content\components\highlight\styles\obsidian.css" />
+    <Content Include="Content\components\highlight\styles\paraiso-dark.css" />
+    <Content Include="Content\components\highlight\styles\paraiso-light.css" />
+    <Content Include="Content\components\highlight\styles\pojoaque.css" />
+    <Content Include="Content\components\highlight\styles\pojoaque.jpg" />
+    <Content Include="Content\components\highlight\styles\railscasts.css" />
+    <Content Include="Content\components\highlight\styles\rainbow.css" />
+    <Content Include="Content\components\highlight\styles\school-book.css" />
+    <Content Include="Content\components\highlight\styles\school-book.png" />
+    <Content Include="Content\components\highlight\styles\solarized-dark.css" />
+    <Content Include="Content\components\highlight\styles\solarized-light.css" />
+    <Content Include="Content\components\highlight\styles\sunburst.css" />
+    <Content Include="Content\components\highlight\styles\tomorrow-night-blue.css" />
+    <Content Include="Content\components\highlight\styles\tomorrow-night-bright.css" />
+    <Content Include="Content\components\highlight\styles\tomorrow-night-eighties.css" />
+    <Content Include="Content\components\highlight\styles\tomorrow-night.css" />
+    <Content Include="Content\components\highlight\styles\tomorrow.css" />
+    <Content Include="Content\components\highlight\styles\vs.css" />
+    <Content Include="Content\components\highlight\styles\xcode.css" />
+    <Content Include="Content\components\highlight\styles\zenburn.css" />
+    <Content Include="Content\components\markdowndeep\css\mdd_styles.css" />
+    <Content Include="Content\components\markdowndeep\images\mdd_ajax_loader.gif" />
+    <Content Include="Content\components\markdowndeep\images\mdd_gripper.png" />
+    <Content Include="Content\components\markdowndeep\images\mdd_modal_background.png" />
+    <Content Include="Content\components\markdowndeep\images\mdd_toolbar.png" />
+    <Content Include="Content\components\markdowndeep\mdd_help.htm" />
+    <Content Include="Content\components\pure\.bower.json" />
+    <Content Include="Content\components\pure\base-context-min.css" />
+    <Content Include="Content\components\pure\base-context.css" />
+    <Content Include="Content\components\pure\base-min.css" />
+    <Content Include="Content\components\pure\base.css" />
+    <Content Include="Content\components\pure\bower.json" />
+    <Content Include="Content\components\pure\buttons-core-min.css" />
+    <Content Include="Content\components\pure\buttons-core.css" />
+    <Content Include="Content\components\pure\buttons-min.css" />
+    <Content Include="Content\components\pure\buttons.css" />
+    <Content Include="Content\components\pure\forms-min.css" />
+    <Content Include="Content\components\pure\forms-nr-min.css" />
+    <Content Include="Content\components\pure\forms-nr.css" />
+    <Content Include="Content\components\pure\forms.css" />
+    <Content Include="Content\components\pure\grids-core-min.css" />
+    <Content Include="Content\components\pure\grids-core.css" />
+    <Content Include="Content\components\pure\grids-min.css" />
+    <Content Include="Content\components\pure\grids-nr-min.css" />
+    <Content Include="Content\components\pure\grids-nr.css" />
+    <Content Include="Content\components\pure\grids-units-min.css" />
+    <Content Include="Content\components\pure\grids-units.css" />
+    <Content Include="Content\components\pure\grids.css" />
+    <Content Include="Content\components\pure\HISTORY.md" />
+    <Content Include="Content\components\pure\LICENSE.md" />
+    <Content Include="Content\components\pure\menus-core-min.css" />
+    <Content Include="Content\components\pure\menus-core.css" />
+    <Content Include="Content\components\pure\menus-min.css" />
+    <Content Include="Content\components\pure\menus-nr-min.css" />
+    <Content Include="Content\components\pure\menus-nr.css" />
+    <Content Include="Content\components\pure\menus-paginator-min.css" />
+    <Content Include="Content\components\pure\menus-paginator.css" />
+    <Content Include="Content\components\pure\menus.css" />
     <Content Include="Content\components\pure\pure-min.css" />
+    <Content Include="Content\components\pure\pure-nr-min.css" />
+    <Content Include="Content\components\pure\pure-nr.css" />
+    <Content Include="Content\components\pure\pure.css" />
+    <Content Include="Content\components\pure\README.md" />
+    <Content Include="Content\components\pure\tables-min.css" />
+    <Content Include="Content\components\pure\tables.css" />
     <Content Include="Content\fonts.css" />
     <Content Include="Content\fonts\opensans-bold.svg" />
     <Content Include="Content\fonts\opensans-light.svg" />
     <Content Include="Content\fonts\opensans-regular.svg" />
     <Content Include="Content\images\git-logo.png" />
+    <Content Include="Content\template.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Scripts\clipboard.min.js" />
     <Content Include="Scripts\highlight.pack.js" />
     <Content Include="Scripts\jquery-1.4.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.4.4.js" />
@@ -551,12 +711,6 @@
     <Content Include="Scripts\MarkdownDeep License.txt" />
     <Content Include="Scripts\MarkdownDeep Quick Reference.txt" />
     <Content Include="Scripts\MarkdownDeepLib.min.js" />
-    <Content Include="Content\components\markdowndeep\images\mdd_ajax_loader.gif" />
-    <Content Include="Content\components\markdowndeep\images\mdd_gripper.png" />
-    <Content Include="Content\components\markdowndeep\mdd_help.htm" />
-    <Content Include="Content\components\markdowndeep\images\mdd_modal_background.png" />
-    <Content Include="Content\components\markdowndeep\css\mdd_styles.css" />
-    <Content Include="Content\components\markdowndeep\images\mdd_toolbar.png" />
     <Content Include="Scripts\MicrosoftAjax.debug.js" />
     <Content Include="Scripts\MicrosoftAjax.js" />
     <Content Include="Scripts\MicrosoftMvcAjax.debug.js" />
@@ -630,6 +784,7 @@
     <None Include="Properties\PublishProfiles\Test.pubxml" />
     <Content Include="Views\Repository\Tags.cshtml" />
     <Content Include="Views\Repository\_Tag.cshtml" />
+    <Content Include="Views\Activity\LastedCommit.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -676,6 +831,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Content Include="App_GlobalResources\Resources.it-IT.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>Resources.it-IT1.designer.cs</LastGenOutput>
+    </Content>
     <EmbeddedResource Include="App_GlobalResources\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
