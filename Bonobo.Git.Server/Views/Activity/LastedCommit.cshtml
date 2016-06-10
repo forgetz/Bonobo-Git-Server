@@ -1,59 +1,26 @@
-﻿
-@{
-    ViewBag.Title = "LastedCommit";
+﻿@{
+    ViewBag.Title = "Lasted Commit";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 
 @if (Model != null)
 {
-    <div class="pure-g">
-
+    <div class="repositoryContent">
         <div class="pure-u-2-5">
             <h1>
                 Lasted Commit
             </h1>
         </div>
+        @{
+            var grid = new WebGrid(rowsPerPage: 10, canPage: true, canSort: false);
+            grid.Bind(Model, null, false, (int)(ViewBag.TotalCount ?? 0));
+            @grid.GetHtml(displayHeader: false, mode: WebGridPagerModes.All,
+                columns: grid.Columns(
+                    grid.Column(format: item => Html.Partial("_LastedCommit", (ActivityCommitModels)item.Value))
+                    )
+                )
+        }
 
-
-        <table>
-            @*<tfoot>
-                    <tr>
-                        <td colspan="1">1
-                            <a href="/Repository/test_aon/master/Commits?page=2">2</a>
-                            <a href="/Repository/test_aon/master/Commits?page=2">&gt;</a>
-                        </td>
-                    </tr>
-                </tfoot>*@
-            <tbody>
-
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>
-                            <div class="commit pure-g">
-                                <div class="pure-u-3-5">
-                                    <h2><a href="@Url.Action("Detail", "Repository", new { id = item.id })">@item.ProjectName</a></h2>
-                                    <div class="commitdate">
-                                        @item.When.ToString("dd/MM/yyyy HH:mm:ss")
-                                    </div>
-                                    <div class="commitdate">
-                                        <a href="@Url.Action("Commit", "Repository", new { id= item.id, commit = item.idSha })">@item.Message</a>
-                                    </div>
-                                </div>
-                                <div class="pure-u-2-5 metadata">
-                                    <div>
-                                        <h4>@item.CommitterName</h4>
-                                        <p>Commit: <a href="@Url.Action("Commit", "Repository", new { id= item.id, commit = item.idSha })">@item.idSha.Substring(0, 7)</a></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                }
-
-            </tbody>
-        </table>
     </div>
-
 }

@@ -34,6 +34,7 @@ namespace Bonobo.Git.Server.Controllers
         public ActionResult LastedCommit(int page = 1)
         {
             page = page >= 1 ? page : 1;
+            int pageSize = 10;
 
             var di = new DirectoryInfo(UserConfiguration.Current.Repositories);
             var allRepo = di.GetDirectories("*.*", SearchOption.TopDirectoryOnly);
@@ -43,60 +44,51 @@ namespace Bonobo.Git.Server.Controllers
 
             foreach (var repoPath in allRepo)
             {
-                //using (var repo = new LibGit2Sharp.Repository(repoPath.FullName))
                 using (var browser = new RepositoryBrowser(Path.Combine(UserConfiguration.Current.Repositories, repoPath.Name)))
                 {
-                    //var filter = new CommitFilter
-                    //{
-                    //    SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Reverse,
-                    //    Since = repo.Refs
-                    //};
-
-                    //var commits = repo.Commits.QueryBy(filter);
                     var name = PathEncoder.Decode("");
                     string referenceName;
                     int totalCount;
-                    var commits = browser.GetCommits(name, page, 10, out referenceName, out totalCount).ToList();
+                    var commits = browser.GetCommits(name, 1, 10, out referenceName, out totalCount).ToList();
 
                     if (commits.Count < 1)
                         continue;
 
                     var com = commits.OrderByDescending(c => c.Date).FirstOrDefault();
 
-                    //foreach (var com in commits)
-                    //{
-                        var id = com.ID;
-                        var committer = com.Author;
-                        var committMail = com.AuthorEmail;
-                        var committWhen = com.Date;
-                        var message = com.Message;
+                    var id = com.ID;
+                    var committer = com.Author;
+                    var committMail = com.AuthorEmail;
+                    var committWhen = com.Date;
+                    var message = com.Message;
 
-                        if (repoList.Where(r => r.Name == repoPath.Name).FirstOrDefault() == null)
-                            continue;
+                    if (repoList.Where(r => r.Name == repoPath.Name).FirstOrDefault() == null)
+                        continue;
 
-                        var repoGuid = repoList.Where(r => r.Name == repoPath.Name).FirstOrDefault().Id; 
+                    var repoGuid = repoList.Where(r => r.Name == repoPath.Name).FirstOrDefault().Id;
 
-                        var ac = new ActivityCommitModels();
-                        ac.ProjectName = repoPath.Name;
-                        ac.CommitterName = committer;
-                        ac.Email = committMail;
-                        ac.When = committWhen;
-                        ac.Message = message;
-                        ac.idSha = id;
-                        ac.id = repoGuid;
-                        list.Add(ac);
-                    //}
-
+                    var ac = new ActivityCommitModels();
+                    ac.ProjectName = repoPath.Name;
+                    ac.CommitterName = committer;
+                    ac.Email = committMail;
+                    ac.When = committWhen;
+                    ac.Message = message;
+                    ac.idSha = id;
+                    ac.id = repoGuid;
+                    list.Add(ac);
+                    
                 }
             }
 
             ViewBag.TotalCount = list.Count;
-            list = list.OrderByDescending(c => c.When).ToList();
+            var sortList = list.OrderByDescending(c => c.When).ToList();
 
-            //if (page >= 1 && pageSize >= 1)
-            //    ct = ct.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            if (page >= 1 && pageSize >= 1)
+            {
+                sortList = sortList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
 
-            return View(list);
+            return View(sortList);
         }
 
         private IEnumerable<RepositoryDetailModel> GetIndexModel()

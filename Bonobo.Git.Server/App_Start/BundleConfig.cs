@@ -13,6 +13,7 @@ namespace Bonobo.Git.Server.App_Start
                 .Include("~/Scripts/jquery-{version}.js")
                 .Include("~/Scripts/jquery.validate*", "~/Content/uni/js/uni-form-validation.jquery.js", "~/Scripts/MicrosoftAjax.js", "~/Scripts/MicrosoftMvcAjax.js")
                 .Include("~/Scripts/highlight.pack.js")
+                .Include("~/Scripts/highlightjs-line-numbers.js")
                 .Include("~/Scripts/clipboard.min.js"));
 
             bundles.Add(new StyleBundle("~/Content/bundledCss")

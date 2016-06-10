@@ -96,7 +96,7 @@ namespace Bonobo.Git.Server.App_Start
 
             routes.MapRoute("RepoCommits",
                             "Repository/Commits/{id}",
-                            new { controller = "Repository", action = "Commits", id = string.Empty, page = 1 });
+                            new { controller = "Repository", action = "Commits", id = String.Empty });
 
             routes.MapRoute("Default", 
                             "{controller}/{action}/{id}",
