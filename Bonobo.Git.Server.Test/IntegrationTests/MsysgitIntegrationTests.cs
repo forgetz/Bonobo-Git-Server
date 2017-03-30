@@ -4,6 +4,8 @@ using Bonobo.Git.Server.Models;
 using Bonobo.Git.Server.Test.IntegrationTests;
 using Bonobo.Git.Server.Test.IntegrationTests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using SpecsFor.Mvc;
 using System;
@@ -60,7 +62,7 @@ namespace Bonobo.Git.Server.Test.Integration.ClAndWeb
             // WorkingDirectory = Path.GetFullPath(WorkingDirectory);
             // GitPath = Path.GetFullPath(GitPath);
             // RepositoryDirectory = Path.Combine(WorkingDirectory, RepositoryName);
-            
+
             List<string> not_found = new List<string>();
 
             foreach (var version in GitVersions)
@@ -465,25 +467,70 @@ namespace Bonobo.Git.Server.Test.Integration.ClAndWeb
                 app.NavigateTo<RepositoryController>(c => c.Commits(repo_id, string.Empty, 1));
                 var link = app.Browser.FindElementByCssSelector("span.tag a");
                 link.Click();
-                
-                app.UrlShouldMapTo<RepositoryController>(c => c.Commits(repo_id, "a", 1)); 
+
+                app.UrlShouldMapTo<RepositoryController>(c => c.Commits(repo_id, "a", null));
 
                 // check link in tags
                 app.NavigateTo<RepositoryController>(c => c.Tags(repo_id, string.Empty, 1));
                 link = app.Browser.FindElementByCssSelector("div.tag a");
                 link.Click();
-                app.UrlShouldMapTo<RepositoryController>(c => c.Commits(repo_id, "a", 1)); 
+                app.UrlShouldMapTo<RepositoryController>(c => c.Commits(repo_id, "a", null));
 
                 // check link in single commit
                 app.NavigateTo<RepositoryController>(c => c.Commit(repo_id, commit_id));
                 link = app.Browser.FindElementByCssSelector("span.tag a");
                 link.Click();
-                app.UrlShouldMapTo<RepositoryController>(c => c.Commits(repo_id, "a", 1));
+                app.UrlShouldMapTo<RepositoryController>(c => c.Commits(repo_id, "a", null));
 
                 ITH.DeleteRepositoryUsingWebsite(repo_id);
             });
         }
-        
+
+        [TestMethod, TestCategory(TestCategories.IntegrationTest)]
+        public void CanNavigateIntoBranchesFolder()
+        {
+            ForAllGits(git =>
+            {
+                var repo = ITH.CreateRepositoryOnWebInterface(RepositoryName);
+                CloneEmptyRepositoryWithCredentials(git);
+                CreateIdentity(git);
+                CreateAndAddTestFiles(git, 1);
+                RunGitOnRepo(git, "branch branchX");
+                Directory.CreateDirectory(Path.Combine(RepositoryDirectory, "dir1"));
+                File.Create(Path.Combine(RepositoryDirectory, "dir1", "file1.txt")).Close();
+                RunGitOnRepo(git, "add dir1").ExpectSuccess();
+                RunGitOnRepo(git, "commit -m\"dir1 on master\"").ExpectSuccess();
+                RunGitOnRepo(git, "push --set-upstream origin master").ExpectSuccess();
+                RunGitOnRepo(git, "checkout branchX").ExpectSuccess();
+                Directory.CreateDirectory(Path.Combine(RepositoryDirectory, "dir2"));
+                File.Create(Path.Combine(RepositoryDirectory, "dir2", "file2.txt")).Close();
+                RunGitOnRepo(git, "add dir2").ExpectSuccess();
+                RunGitOnRepo(git, "commit -m\"dir2 on branchX\"").ExpectSuccess();
+                RunGitOnRepo(git, "push --set-upstream origin branchX").ExpectSuccess();
+
+                app.NavigateTo<RepositoryController>(c => c.Tree(repo, null, null));
+                var elements = app.Browser.FindElementsByCssSelector("table#files td.path a.directory");
+                Assert.AreEqual(1, elements.Count);
+                Assert.AreEqual("dir1", elements[0].Text);
+                elements[0].Click();
+                app.WaitForElementToBeVisible(By.CssSelector("nav.branches"), TimeSpan.FromSeconds(1));
+                app.UrlShouldMapTo<RepositoryController>(c => c.Tree(repo, "master", "dir1"));
+
+                app.NavigateTo<RepositoryController>(c => c.Tree(repo, "branchX", null));
+                app.WaitForElementToBeVisible(By.CssSelector("nav.branches"), TimeSpan.FromSeconds(1));
+                app.UrlShouldMapTo<RepositoryController>(c => c.Tree(repo, "branchX", null));
+                elements = app.Browser.FindElementsByCssSelector("table#files td.path a.directory");
+                Assert.AreEqual(1, elements.Count);
+                Assert.AreEqual("dir2", elements[0].Text);
+                elements[0].Click();
+                app.WaitForElementToBeVisible(By.CssSelector("nav.branches"), TimeSpan.FromSeconds(1));
+                app.UrlShouldMapTo<RepositoryController>(c => c.Tree(repo, "branchX", "dir2"));
+
+                ITH.DeleteRepositoryUsingWebsite(repo);
+            });
+
+        }
+
         /// <summary>
         /// Helper to run a test for every installed Git instance
         /// </summary>
@@ -517,7 +564,7 @@ namespace Bonobo.Git.Server.Test.Integration.ClAndWeb
             {
                 Assert.AreEqual(string.Format(git.Resources[MsysgitResources.Definition.PushFilesFailError], BareUrl), res.StdErr);
             }
-        } 
+        }
 
         private void SetAnonPush(bool allowAnonymousPush)
         {
@@ -608,7 +655,7 @@ namespace Bonobo.Git.Server.Test.Integration.ClAndWeb
             RunGitOnRepo(git, "init").ExpectSuccess();
             RunGitOnRepo(git, String.Format("remote add origin {0}", RepositoryUrlWithCredentials)).ExpectSuccess();
         }
-        
+
         private void InitAndPushRepository(GitInstance git)
         {
             RunGitOnRepo(git, "init").ExpectSuccess();
@@ -638,7 +685,7 @@ namespace Bonobo.Git.Server.Test.Integration.ClAndWeb
         {
             RunGitOnRepo(git, "tag -a v1.4 -m \"my version 1.4\"").ExpectSuccess();
             var result = RunGitOnRepo(git, "push --tags origin");
-            
+
             Assert.AreEqual(String.Format(git.Resources[MsysgitResources.Definition.PushTagError], RepositoryUrlWithCredentials), result.StdErr);
         }
 
@@ -665,7 +712,7 @@ namespace Bonobo.Git.Server.Test.Integration.ClAndWeb
         private void CloneEmptyRepositoryWithCredentials(GitInstance git)
         {
             var result = RunGit(git, String.Format(String.Format("clone {0}", RepositoryUrlWithCredentials), RepositoryName), WorkingDirectory);
-            
+
             Assert.AreEqual(git.Resources[MsysgitResources.Definition.CloneEmptyRepositoryOutput], result.StdOut);
             Assert.AreEqual(git.Resources[MsysgitResources.Definition.CloneEmptyRepositoryError], result.StdErr);
         }

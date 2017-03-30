@@ -6,13 +6,13 @@ tags: [Changelog, Changes, Bug Fixes, Features]
 
 ## Version 6.0.0
 
-**TBD March 2016**
+**29 March 2017**
 
 ### Compatibility issues
 
 * This version adds column to several tables in the database. This makes it
-incompatible with previous versions of Bonobo. Please ensure that you have a 
-backup of your App_Data folder before you update.
+incompatible with previous versions of Bonobo. **Please ensure that you have a 
+backup of your App_Data folder before you update.**
 
 ### Features
 
@@ -38,6 +38,7 @@ backup of your App_Data folder before you update.
 * Bonobo can start enough to allow access to settings if git directory is mis-configured #451
 * Bonobo doesn't run on systems with particular machine.config RoleManager settings #486
 * The repository logo was not visible in all views
+* Fixed inability to browse folders in branches other then master #541
 
 ### Code improvements
 
@@ -50,6 +51,7 @@ backup of your App_Data folder before you update.
 * Resharper settings provided so that Resharper suggested style matches project #465
 * UserModel and User entity class name properties made more consistent #470
 * Far fewer catch-all claueses silently swallowing exceptions
+* Updated jQuery and associated js code to 1.12.4 #586
 
 
 ## Version 5.2
@@ -357,7 +359,7 @@ This is a major release as Ollienator simplified and consolidated authorization 
 * Swedish localization - [JLedel](https://github.com/JLedel)
 * Russian localization - grigoryev
 * Spanish localization - [AHTA](https://github.com/AHTA)
-* Download repository as ZIP - [Rémy de Sérésin](https://github.com/latop2604)
+* Download repository as ZIP - [RÃ©my de SÃ©rÃ©sin](https://github.com/latop2604)
 
 ### Bug Fixes
 

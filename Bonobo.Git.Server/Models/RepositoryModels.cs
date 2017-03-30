@@ -174,7 +174,7 @@ namespace Bonobo.Git.Server.Models
 
         [Display(ResourceType = typeof(Resources), Name = "Repository_Tree_CommitDate")]
         public DateTime? CommitDate { get; set; }
-        public string CommitDateString { get { return CommitDate.HasValue ? CommitDate.Value.ToString("dd/MM/yyyy HH:mm:ss") : CommitDate.ToString(); } }
+        public string CommitDateString { get { return CommitDate.HasValue ? CommitDate.Value.ToString() : CommitDate.ToString(); } }
 
         [Display(ResourceType = typeof(Resources), Name = "Repository_Tree_Author")]
         public string Author { get; set; }
@@ -302,6 +302,7 @@ namespace Bonobo.Git.Server.Models
     public class RepositoryBlameModel
     {
         public string Name { get; set; }
+        public string TreeName { get; set; }
         public string Path { get; set; }
         public RepositoryLogoDetailModel Logo { get; set; }
         public long FileSize { get; set; }

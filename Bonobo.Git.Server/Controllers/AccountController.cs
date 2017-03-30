@@ -132,6 +132,12 @@ namespace Bonobo.Git.Server.Controllers
                 return RedirectToAction("Unauthorized", "Home");
             }
 
+            if (AuthenticationSettings.DemoModeActive && User.IsInRole(Definitions.Roles.Administrator) && User.Id() == model.Id)
+            {
+                // Don't allow the admin user to be changed in demo mode
+                return RedirectToAction("Unauthorized", "Home");
+            }
+
             if (ModelState.IsValid)
             {
                 bool valid = true;
@@ -180,8 +186,7 @@ namespace Bonobo.Git.Server.Controllers
             }
 
             var credentials = User.Username();
-            var dc = new PrincipalContext(ContextType.Domain, credentials.GetDomain());
-            var adUser = UserPrincipal.FindByIdentity(dc, credentials);
+            var adUser = ADHelper.GetUserPrincipal(credentials);
             if (adUser != null)
             {
                 //TODO Is this legit? Could an AD user ever not have a Guid
