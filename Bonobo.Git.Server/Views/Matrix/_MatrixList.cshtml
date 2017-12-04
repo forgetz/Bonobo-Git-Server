@@ -15,38 +15,44 @@
 
 @if (Model != null)
 {
-    <table id="tblmatrix" class="pure-table" border="1">
-        <thead>
-            <tr>
-                <th>@Model.TableHeaderName1 \ @Model.TableHeaderName2</th>
-                @if (Model.MatrixUserRole.Count > 0)
+    <div class="dvtblmatrix">
+        <table id="tblmatrix" class="pure-table" border="1">
+            <thead>
+                <tr>
+                    <th>@Model.TableHeaderName1 \ @Model.TableHeaderName2</th>
+                    @if (Model.MatrixUserRole.Count > 0)
                 {
                     foreach (var allitem in Model.MatrixUserRole.FirstOrDefault().FlagItem)
                     {
-                        <th>@allitem.Name</th>
-                    }
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.MatrixUserRole)
-            {
-                <tr>
-                    <td>@item.Username</td>
-                    @foreach (var role in item.FlagItem)
-                    {
-                        <td>@Html.Raw(role.Flag == true ? "<i class='fa fa-check'><span class='hidden'>X</span></i>" : "")</td>
+                            <th>@allitem.Name</th>
+                        }
                     }
                 </tr>
-            }
-        </tbody>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.MatrixUserRole)
+                {
+                    <tr>
+                        <td>@item.Username</td>
+                        @foreach (var role in item.FlagItem)
+                    {
+                            <td>@Html.Raw(role.Flag == true ? "<i class='fa fa-check'><span class='hidden'>X</span></i>" : "")</td>
+                        }
+                    </tr>
+                }
+            </tbody>
 
-    </table>
+        </table>
+    </div>
 }
 
 <style>
     .hidden
     {
         display: none;
+    }
+    .dvtblmatrix
+    {
+        overflow: auto;
     }
 </style>
