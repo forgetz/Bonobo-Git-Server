@@ -288,6 +288,7 @@
     <Compile Include="Configuration\DiagnosticReporter.cs" />
     <Compile Include="Configuration\FederationSettings.cs" />
     <Compile Include="Controllers\ActivityController.cs" />
+    <Compile Include="Controllers\MatrixController.cs" />
     <Compile Include="Controllers\ValidationController.cs" />
     <Compile Include="Data\ADBackend.cs" />
     <Compile Include="Data\ADBackendStore.cs" />
@@ -328,6 +329,7 @@
     <Compile Include="Helpers\MembershipHelper.cs" />
     <Compile Include="Helpers\RepositoryCommitModelHelpers.cs" />
     <Compile Include="Models\ActivityCommitModels.cs" />
+    <Compile Include="Models\MatrixModel.cs" />
     <Compile Include="Models\RepositoryCommitTitle.cs" />
     <Compile Include="Owin\NativeMethods.cs" />
     <Compile Include="Owin\WindowsAuthenticationDefaults.cs" />
@@ -823,6 +825,13 @@
     <Content Include="Views\Repository\_Tag.cshtml" />
     <Content Include="Views\Activity\LastedCommit.cshtml" />
     <Content Include="Views\Activity\_LastedCommit.cshtml" />
+    <Content Include="Views\Matrix\Index.cshtml" />
+    <Content Include="Views\Matrix\UserRole.cshtml" />
+    <Content Include="Views\Matrix\TeamMember.cshtml" />
+    <Content Include="Views\Matrix\RepositoryContributor.cshtml" />
+    <Content Include="Views\Matrix\RepositoryAdmin.cshtml" />
+    <Content Include="Views\Matrix\RepositoryTeam.cshtml" />
+    <Content Include="Views\Matrix\_MatrixList.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

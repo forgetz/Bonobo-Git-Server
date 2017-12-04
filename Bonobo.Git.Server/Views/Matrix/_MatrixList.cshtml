@@ -1,0 +1,52 @@
+﻿@model Bonobo.Git.Server.Models.MatrixModel
+
+<h2>@Model.Title</h2>
+[&nbsp;
+<a href="@Url.Action("UserRole", "Matrix")" class="matrix">UserRole</a>&nbsp;|
+<a href="@Url.Action("TeamMember", "Matrix")" class="matrix">TeamMember</a>&nbsp;|
+<a href="@Url.Action("RepositoryContributor", "Matrix")" class="matrix">RepositoryContributor</a>&nbsp;|
+<a href="@Url.Action("RepositoryAdmin", "Matrix")" class="matrix">RepositoryAdmin</a>&nbsp;|
+<a href="@Url.Action("RepositoryTeam", "Matrix")" class="matrix">RepositoryTeam</a>&nbsp;
+]
+<br />
+<br />
+
+<button id="btnExportData" type="button" class="pure-button pure-button-primary" onclick="MatrixExportExcel('#tblmatrix','Sheet1','@Model.ExcelFileName');">Export to Excel</button>
+
+@if (Model != null)
+{
+    <table id="tblmatrix" class="pure-table" border="1">
+        <thead>
+            <tr>
+                <th>@Model.TableHeaderName1 \ @Model.TableHeaderName2</th>
+                @if (Model.MatrixUserRole.Count > 0)
+                {
+                    foreach (var allitem in Model.MatrixUserRole.FirstOrDefault().FlagItem)
+                    {
+                        <th>@allitem.Name</th>
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.MatrixUserRole)
+            {
+                <tr>
+                    <td>@item.Username</td>
+                    @foreach (var role in item.FlagItem)
+                    {
+                        <td>@Html.Raw(role.Flag == true ? "<i class='fa fa-check'><span class='hidden'>X</span></i>" : "")</td>
+                    }
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+
+<style>
+    .hidden
+    {
+        display: none;
+    }
+</style>

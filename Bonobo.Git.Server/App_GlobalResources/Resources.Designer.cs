@@ -918,6 +918,15 @@ namespace Bonobo.Git.Server.App_GlobalResources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Matrix.
+        /// </summary>
+        public static string Layout_AdministrationMatrix {
+            get {
+                return ResourceManager.GetString("Layout_AdministrationMatrix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Repositories.
         /// </summary>
         public static string Layout_AdministrationRepositories {
