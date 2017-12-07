@@ -13,17 +13,19 @@
 
 <button id="btnExportData" type="button" class="pure-button pure-button-primary" onclick="MatrixExportExcel('#tblmatrix','Sheet1','@Model.ExcelFileName');">Export to Excel</button>
 
+
 @if (Model != null)
 {
+
     <div class="dvtblmatrix">
         <table id="tblmatrix" class="pure-table" border="1">
             <thead>
-                <tr>
+                <tr class="theadTrId" style="background: white;">
                     <th>@Model.TableHeaderName1 \ @Model.TableHeaderName2</th>
                     @if (Model.MatrixUserRole.Count > 0)
-                {
-                    foreach (var allitem in Model.MatrixUserRole.FirstOrDefault().FlagItem)
                     {
+                        foreach (var allitem in Model.MatrixUserRole.FirstOrDefault().FlagItem)
+                        {
                             <th>@allitem.Name</th>
                         }
                     }
@@ -35,7 +37,7 @@
                     <tr>
                         <td>@item.Username</td>
                         @foreach (var role in item.FlagItem)
-                    {
+                        {
                             <td>@Html.Raw(role.Flag == true ? "<i class='fa fa-check'><span class='hidden'>X</span></i>" : "")</td>
                         }
                     </tr>
@@ -53,6 +55,11 @@
     }
     .dvtblmatrix
     {
-        overflow: auto;
+        height: 500px;
+        width: 900px;
+        background: white;
     }
+
+
+
 </style>

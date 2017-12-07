@@ -6,3 +6,14 @@
         filename: filename
     });
 }
+
+$(document).ready(function () {
+
+    $("#tblmatrix").tableHeadFixer({
+        "left": 1,
+        'head': true,
+        'z-index': 9
+    });
+    
+});
+
